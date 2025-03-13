@@ -1,0 +1,9 @@
+@media (max-width: 767px) {
+    .perfil-image {
+      margin: 25px;
+    }
+    .social-footer{
+        right: 10px;
+    }
+  }
+  

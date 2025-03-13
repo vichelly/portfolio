@@ -10,6 +10,8 @@ import ParticleBackground from "@/components/particle-background"
 import { useTheme } from "next-themes"
 import Timeline from "@/components/timeline"
 import { Toaster } from "sonner"
+import Image from "next/image";
+import styles from "./styles/perfil-image.module.css"
 
 export default function Portfolio() {
   const [scrollY, setScrollY] = useState(0)
@@ -287,7 +289,7 @@ export default function Portfolio() {
         <div
           className="absolute top-0 right-0 w-96 h-96 rounded-full bg-primary/5 blur-3xl -translate-y-1/2"
           style={{
-            transform: `translateY(${-scrollY * 0.1}px) translateX(${scrollY * 0.05}px)`,
+            opacity: Math.min(1, Math.max(0, (scrollY - 300) / 300)),
           }}
         ></div>
 
@@ -295,7 +297,6 @@ export default function Portfolio() {
           <h2
             className="text-3xl md:text-4xl font-bold mb-12 text-center"
             style={{
-              transform: `translateY(${Math.max(0, (scrollY - 300) * 0.1)}px)`,
               opacity: Math.min(1, Math.max(0, (scrollY - 300) / 300)),
             }}
           >
@@ -306,19 +307,20 @@ export default function Portfolio() {
             <div
               className="relative"
               style={{
-                transform: `translateY(${Math.min(0, (scrollY - 400) * 0.05)}px)`,
-                opacity: Math.min(1, Math.max(0, (scrollY - 400) / 300)),
+                opacity: Math.min(1, Math.max(0, (scrollY - 300) / 300)),
               }}
             >
               {/* Imagem de Perfil */}
-              <div className="aspect-square rounded-2xl overflow-hidden border border-border shadow-xl">
-                <img
-                  src="/placeholder.svg?height=40&width=40"
+              <div className={`aspect-square rounded-2xl overflow-hidden border border-border shadow-xl ${styles['perfil-image']}`}
+              >
+                <Image
+                  src=""
                   alt="Profile"
                   className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                 />
               </div>
-              <div className="absolute -bottom-6 -right-6 bg-background p-4 rounded-xl shadow-lg border border-border">
+              <div className={`absolute -bottom-6 -right-6 bg-background p-4 rounded-xl shadow-lg border border-border ${styles['social-footer']}`}
+              >
                 <div className="flex gap-4">
                   <Link
                     href="https://github.com"
@@ -348,8 +350,7 @@ export default function Portfolio() {
 
             <div
               style={{
-                transform: `translateY(${Math.min(0, (scrollY - 400) * 0.05)}px)`,
-                opacity: Math.min(1, Math.max(0, (scrollY - 400) / 300)),
+                opacity: Math.min(1, Math.max(0, (scrollY - 300) / 300)),
               }}
             >
               <h3
