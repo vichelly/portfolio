@@ -164,7 +164,7 @@ const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(({ scrollToSection
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          transition: transform 0.8s ease-out;
+          transition: transform 0.9s ease-out;
         }
       `}</style>
     </section>

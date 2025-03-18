@@ -24,7 +24,7 @@ const ContactSection = forwardRef<HTMLElement>((props, ref) => {
         <div className="max-w-2xl mx-auto">
           <div className="grid md:grid-cols-2 gap-8 mb-12">
             <motion.a
-              href="https://linkedin.com/in/yourprofile"
+              href="www.linkedin.com/in/vitor-lucas-fujita-felício"
               target="_blank"
               rel="noopener noreferrer"
               className="flex flex-col items-center p-8 rounded-lg bg-card hover:bg-primary/10 transition-colors border border-border"
@@ -40,17 +40,18 @@ const ContactSection = forwardRef<HTMLElement>((props, ref) => {
             </motion.a>
 
             <motion.a
-              href="mailto:your.email@example.com"
+              href="mailto:vlucasff@hotmail.com"
               className="flex flex-col items-center p-8 rounded-lg bg-card hover:bg-primary/10 transition-colors border border-border"
               whileHover={{ y: -5 }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
+              target="_blank_"
             >
               <Mail className="h-12 w-12 mb-4 text-primary" />
               <h3 className="text-xl font-bold mb-2">Email</h3>
-              <p className="text-center text-muted-foreground">Send me an email</p>
+              <p className="text-center text-muted-foreground">Send me an email at vlucasff@hotmail.com</p>
             </motion.a>
           </div>
         </div>
