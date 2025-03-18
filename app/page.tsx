@@ -85,7 +85,7 @@ export default function Portfolio() {
     <div className="min-h-screen relative bg-background text-foreground">
       {/* Global Interactive Background */}
       <div className="fixed inset-0 w-full h-full z-0">
-        <InteractiveBackground />
+        <InteractiveBackground  />
       </div>
 
       {/* Content Container */}

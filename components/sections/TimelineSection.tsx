@@ -26,7 +26,7 @@ const TimelineSection = forwardRef<HTMLElement>((props, ref) => {
 
           {/* Timeline Items */}
           <TimelineItem
-            year="jul 2024 - Present"
+            year="2024 - Present"
             title="Software Engineer Intern"
             company="Itaú Unibanco"
             description="Conquista Digital - Gestão Portal Itaú 
@@ -39,12 +39,12 @@ Manter site institucional do Itaú VWO, ContentStack e Bynder."
             year="2024"
             title="Professional Scrum Product Owner™ I (PSPO I) Certification"
             company="Scrum.Org"
-            description="Those who earn the globally recognized Professional Scrum Product Owner I (PSPO I) certification have demonstrated a fundamental level of Professional Scrum Product Ownership, proving an intermediate understanding of the Scrum framework and how to apply it to maximize the value delivered with a product. This individual has also demonstrated an understanding of how to maximize return on investment and optimize the total cost of ownership of a product."
+            description=""
             side="left"
           />
 
           <TimelineItem
-            year="Nov 2022 - Jun 2024 · 1yr 8mos"
+            year="2022 - 2024"
             title="Software Engineer Intern"
             company="Agile inc"
             description="During my tenure, I developed significant projects using advanced technologies. I created institutional sites and campaigns with Next.js and React, including the company's site, Scrum Day 2023 campaign, and Agile School's back-office site. I also implemented a checkout system on Magento2, maintained WooCommerce sites for Agile School, and developed on the Hotmart platform for Agile Academy's migration. Additionally, I contributed to consulting projects by building a B2B site on Salesforce and a fully customized WooCommerce e-commerce site with unique PHP and JavaScript functionalities."
@@ -52,10 +52,10 @@ Manter site institucional do Itaú VWO, ContentStack e Bynder."
           />
 
           <TimelineItem
-            year="Feb 2022 - Dec 2025 · 4y"
+            year="2022"
             title="Bacharelo's degree, Computer Science"
             company="FEI University Center"
-            description="Pursued a Computer Science degree at one of Brazil's leading engineering schools, specializing in software development, artificial intelligence, and cutting-edge technologies."
+            description="Pursued a Computer Science degree at one of Brazil's leading engineering schools, specializing in software development, artificial intelligence, and cutting-edge technologies"
             side="left"
           />
         </div>
