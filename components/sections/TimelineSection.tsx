@@ -26,34 +26,36 @@ const TimelineSection = forwardRef<HTMLElement>((props, ref) => {
 
           {/* Timeline Items */}
           <TimelineItem
-            year="2023 - Present"
-            title="Senior Frontend Developer"
-            company="Tech Company"
-            description="Leading the frontend development team, implementing new features, and improving performance."
+            year="jul 2024 - Present"
+            title="Software Engineer Intern"
+            company="Itaú Unibanco"
+            description="Digital Achievement - Itaú Portal Management
+I developed the web application Jarvis using AWS Cloud, Angular, and Python ( Flask ) to analyze and optimize the SEO of Itaú blog pages with generative AI.
+Maintain itaú’s institutional website working with VWO, ContentStack, and Bynder.."
             side="right"
           />
 
           <TimelineItem
-            year="2021 - 2023"
-            title="Frontend Developer"
-            company="Digital Agency"
-            description="Developed responsive websites and web applications for various clients using React and Next.js."
+            year="2024"
+            title="Professional Scrum Product Owner™ I (PSPO I) Certification"
+            company="Scrum.Org"
+            description="Those who earn the globally recognized Professional Scrum Product Owner I (PSPO I) certification have demonstrated a fundamental level of Professional Scrum Product Ownership, proving an intermediate understanding of the Scrum framework and how to apply it to maximize the value delivered with a product. This individual has also demonstrated an understanding of how to maximize return on investment and optimize the total cost of ownership of a product."
             side="left"
           />
 
           <TimelineItem
-            year="2019 - 2021"
-            title="Junior Web Developer"
-            company="Startup"
-            description="Worked on building and maintaining the company's web platform and internal tools."
+            year="Nov 2022 - Jun 2024 · 1yr 8mos"
+            title="Software Engineer Intern"
+            company="Agile inc"
+            description="During my tenure, I developed significant projects using advanced technologies. I created institutional sites and campaigns with Next.js and React, including the company's site, Scrum Day 2023 campaign, and Agile School's back-office site. I also implemented a checkout system on Magento2, maintained WooCommerce sites for Agile School, and developed on the Hotmart platform for Agile Academy's migration. Additionally, I contributed to consulting projects by building a B2B site on Salesforce and a fully customized WooCommerce e-commerce site with unique PHP and JavaScript functionalities."
             side="right"
           />
 
           <TimelineItem
-            year="2015 - 2019"
-            title="Computer Science Degree"
-            company="University"
-            description="Studied computer science with a focus on web technologies and software engineering."
+            year="Feb 2022 - Dec 2025 · 4y"
+            title="Bacharelo's degree, Computer Science"
+            company="FEI University Center"
+            description="Pursued a Computer Science degree at one of Brazil's leading engineering schools, specializing in software development, artificial intelligence, and cutting-edge technologies."
             side="left"
           />
         </div>
