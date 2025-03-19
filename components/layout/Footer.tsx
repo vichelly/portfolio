@@ -10,7 +10,7 @@ export default function Footer() {
             <a href="https://github.com/vichelly" target="_blank_" className="text-muted-foreground hover:text-primary transition-colors">
               <Github className="h-5 w-5" />
             </a>
-            <a href="www.linkedin.com/in/vitor-lucas-fujita-felício" target="_blank_" className="text-muted-foreground hover:text-primary transition-colors">
+            <a href="https://www.linkedin.com/in/vitor-lucas-fujita-felício" target="_blank_" className="text-muted-foreground hover:text-primary transition-colors">
               <Linkedin className="h-5 w-5" />
             </a>
             <a href="mailto:vlucasff@hotmail.com" target="_blank_" className="text-muted-foreground hover:text-primary transition-colors">

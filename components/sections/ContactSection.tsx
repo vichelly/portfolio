@@ -24,7 +24,7 @@ const ContactSection = forwardRef<HTMLElement>((props, ref) => {
         <div className="max-w-2xl mx-auto">
           <div className="grid md:grid-cols-2 gap-8 mb-12">
             <motion.a
-              href="www.linkedin.com/in/vitor-lucas-fujita-felício"
+              href="https://www.linkedin.com/in/vitor-lucas-fujita-felício"
               target="_blank"
               rel="noopener noreferrer"
               className="flex flex-col items-center p-8 rounded-lg bg-card hover:bg-primary/10 transition-colors border border-border"

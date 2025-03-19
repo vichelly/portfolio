@@ -39,19 +39,19 @@ const AboutSection = forwardRef<HTMLElement>((props, ref) => {
             className="grid grid-cols-2 gap-4"
           >
             <div className="bg-primary/10 p-6 rounded-lg text-center">
-              <h3 className="text-xl font-bold mb-2">Front-end</h3>
+              <h3 className="text-x font-bold mb-2">Front-end</h3>
               <p>React, Next.js, Angular</p>
             </div>
             <div className="bg-primary/10 p-6 rounded-lg text-center">
-              <h3 className="text-xl font-bold mb-2">Back-end</h3>
+              <h3 className="text-x font-bold mb-2">Back-end</h3>
               <p>Node.js, Express, Python, Flask</p>
             </div>
             <div className="bg-primary/10 p-6 rounded-lg text-center">
-              <h3 className="text-xl font-bold mb-2">Agile Project Management</h3>
+              <h3 className="text-x font-bold mb-2">Agile Project Management</h3>
               <p> <a href="https://www.credly.com/badges/bb32913c-ea6a-4f6d-8161-7dd65c651a97/linked_in_profile" target="_blank_">Certified Professional Scrum Product Owner™ I</a></p>
             </div>
             <div className="bg-primary/10 p-6 rounded-lg text-center">
-              <h3 className="text-xl font-bold mb-2">Cloud Computing</h3>
+              <h3 className="text-x font-bold mb-2">Cloud Computing</h3>
               <p>Amazon Web Services (AWS)</p>
             </div>
           </motion.div>
