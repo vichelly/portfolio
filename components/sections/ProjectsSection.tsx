@@ -41,7 +41,7 @@ const ProjectsSection = forwardRef<HTMLElement>((props, ref) => {
     {
       title: "Gastly busters",
       description: "This is a simple game I created during my first semester of computer science at university. It was a straightforward project, but quite challenging. I spent many nights programming it, and I'm very proud of the game, even though it's simple and has a few bugs.",
-      tags: ["Javascript", "Canva"],
+      tags: ["Javascript", "Canvas"],
       image: "gastlybusters.png?height=300&width=500",
       link: "https://vichelly.github.io/gastly-busters/jogo.html",
       github: "https://github.com/vichelly/gastly-busters",
