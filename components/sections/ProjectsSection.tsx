@@ -7,17 +7,25 @@ import ProjectCard from "@/components/ui/ProjectCard"
 const ProjectsSection = forwardRef<HTMLElement>((props, ref) => {
   const projects = [
     {
-      title: "Scrum Day 2023 website",
-      description: "The official website for Scrum Day 2023, providing event information, schedules, speaker details, and registration capabilities. Built with Next.js for optimal performance and user experience.",
-      tags: ["Next.js"],
-      image: "/scrumday.png?height=300&width=500",
+      title: "PowerLifting Personal Records API",
+      description: "User registration API and data related to their personal records in powerlifting exercises.",
+      tags: ["Java","Springboot","Lambok","PostgreeSQL"],
+      image: "/pr.png?height=300&width=500",
       link: "https://github.com/vichelly/SD23",
       github: "https://github.com/vichelly/SD23",
     },
     {
+      title: "Scrum Day 2023 website",
+      description: "The official website for Scrum Day 2023, providing event information, schedules, speaker details, and registration capabilities. Built with Next.js for optimal performance and user experience.",
+      tags: ["Javascript","Typescript","Next.js"],
+      image: "/scrumday.png?height=300&width=500",
+      link: "https://github.com/vichelly/my-powerlifting-personal-records",
+      github: "https://github.com/vichelly/my-powerlifting-personal-records",
+    },
+    {
       title: "Link Reader",
       description: "Link Reader is a simple web app built with Flask to experiment with the Gemini API. Users input a URL, and the app uses Python to scrape and summarize the webpage's content into a few sentences.",
-      tags: ["Flask","Gemini AI API","LLM"],
+      tags: ["Python","Flask","Gemini AI API","LLM"],
       image: "/linkreader.png?height=300&width=500",
       link: "https://link-reader.vercel.app/",
       github: "https://github.com/vichelly/LinkReader",
