@@ -49,8 +49,8 @@ const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(({ scrollToSection
   const pupilRadius = fontSize * 0.12; // A pupila será 10% do tamanho da fonte
 
   // Deslocamento do centro do olho para a esquerda e para cima
-  const offsetX = 5; // Deslocamento horizontal
-  const offsetY = 5; // Deslocamento vertical
+  const offsetX = 7; // Deslocamento horizontal
+  const offsetY = 7; // Deslocamento vertical
 
   // Função para limitar o movimento da pupila dentro do olho
   const calculatePupilPosition = (mouseX: number, mouseY: number) => {

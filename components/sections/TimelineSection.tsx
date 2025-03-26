@@ -29,9 +29,9 @@ const TimelineSection = forwardRef<HTMLElement>((props, ref) => {
             year="2024 - Present"
             title="Software Engineer Intern"
             company="Itaú Unibanco"
-            description="Conquista Digital - Gestão Portal Itaú 
-Desenvolvi a aplicação web Jarvis, utilizando AWS Cloud, Angular e Python (Flask), para análise e correção SEO de páginas do blog Itaú com IA generativa.
-Manter site institucional do Itaú VWO, ContentStack e Bynder."
+            description="Digital Achievement - Itaú Portal Management
+Developed the web application Jarvis, using AWS Cloud, Angular, and Python (Flask), for SEO analysis and correction of Itaú blog pages with generative AI.
+Maintain Itaú's institutional website with VWO, ContentStack, and Bynder."
             side="right"
           />
 

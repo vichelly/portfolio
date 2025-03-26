@@ -27,7 +27,7 @@ const AboutSection = forwardRef<HTMLElement>((props, ref) => {
             className="space-y-6"
           >
             <p className="text-lg">
-              Software engineer specializing in Front and Back-end web development using technologies such as React, Node.js, Angular, Python, and AWS technologies. Currently working at Itaú Unibanco, where I develop innovative solutions with the team responsible for the Itaú Portal, improving user experience and operational efficiency. I'm always open to collaborations and opportunities involving technological innovation.
+            Software engineer specializing in web development using technologies such as Java, Angular, React, Python, and AWS cloud. I have experience with agile teams and a strong product ownership mindset. Currently, I work at Itaú Unibanco, where I develop innovative solutions with the team that manages the Itaú Portal, improving user experience and operational efficiency. I am always open to collaborations and opportunities involving technological innovation.
             </p>
           </motion.div>
 
@@ -39,12 +39,12 @@ const AboutSection = forwardRef<HTMLElement>((props, ref) => {
             className="grid grid-cols-2 gap-4"
           >
             <div className="bg-primary/10 p-6 rounded-lg text-center">
-              <h3 className="text-x font-bold mb-2">Front-end</h3>
-              <p>React, Next.js, Angular</p>
+              <h3 className="text-x font-bold mb-2">Back-end</h3>
+              <p>Java, Springboot, Node.js, Express, Python, Flask</p>
             </div>
             <div className="bg-primary/10 p-6 rounded-lg text-center">
-              <h3 className="text-x font-bold mb-2">Back-end</h3>
-              <p>Node.js, Express, Python, Flask</p>
+              <h3 className="text-x font-bold mb-2">Front-end</h3>
+              <p>React, Next.js, Angular</p>
             </div>
             <div className="bg-primary/10 p-6 rounded-lg text-center">
               <h3 className="text-x font-bold mb-2">Agile Project Management</h3>
@@ -53,6 +53,10 @@ const AboutSection = forwardRef<HTMLElement>((props, ref) => {
             <div className="bg-primary/10 p-6 rounded-lg text-center">
               <h3 className="text-x font-bold mb-2">Cloud Computing</h3>
               <p>Amazon Web Services (AWS)</p>
+            </div>
+            <div className="bg-primary/10 p-6 rounded-lg text-center">
+              <h3 className="text-x font-bold mb-2">No code</h3>
+              <p>Wordpress, Woocomerce (elementor)</p>
             </div>
           </motion.div>
         </div>
