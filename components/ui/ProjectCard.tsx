@@ -22,7 +22,7 @@ export default function ProjectCard({ title, description, tags, image, link, git
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
       whileHover={{ y: -10 }}
-      className="overflow-hidden rounded-lg border border-border bg-card/80 backdrop-blur-sm shadow-sm"
+      className="overflow-hidden rounded-lg border border-border bg-card/80 backdrop-blur-sm shadow-sm max-w-full"
     >
       <div className="relative overflow-hidden aspect-video">
         <img
@@ -32,8 +32,8 @@ export default function ProjectCard({ title, description, tags, image, link, git
         />
       </div>
       <CardContent className="p-6">
-        <h3 className="text-xl font-bold mb-2">{title}</h3>
-        <p className="text-muted-foreground mb-4">{description}</p>
+        <h3 className="text-xl font-bold mb-2 break-words">{title}</h3>
+        <p className="text-muted-foreground mb-4 break-words">{description}</p>
         <div className="flex flex-wrap gap-2 mb-4">
           {tags.map((tag, index) => (
             <span key={index} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
@@ -41,7 +41,7 @@ export default function ProjectCard({ title, description, tags, image, link, git
             </span>
           ))}
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
           <Button variant="outline" size="sm" asChild>
             <a href={link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
               <ExternalLink className="h-4 w-4" /> Live Demo
@@ -57,4 +57,3 @@ export default function ProjectCard({ title, description, tags, image, link, git
     </motion.div>
   )
 }
-

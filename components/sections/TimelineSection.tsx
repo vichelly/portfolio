@@ -6,7 +6,7 @@ import TimelineItem from "@/components/ui/TimelineItem"
 
 const TimelineSection = forwardRef<HTMLElement>((props, ref) => {
   return (
-    <section id="timeline" ref={ref} className="py-20 bg-background/50 backdrop-blur-[2px]">
+    <section id="timeline" ref={ref} className="py-20 bg-background/50 backdrop-blur-[2px] overflow-hidden">
       <div className="container">
         <motion.div
           initial={{ opacity: 0 }}
@@ -22,7 +22,7 @@ const TimelineSection = forwardRef<HTMLElement>((props, ref) => {
 
         <div className="relative max-w-4xl mx-auto">
           {/* Timeline Line */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-primary/30"></div>
+          <div className="absolute inset-y-0 left-4 md:left-1/2 md:-translate-x-1/2 w-1 bg-primary/30"></div>
 
           {/* Timeline Items */}
           <TimelineItem
@@ -67,4 +67,3 @@ Maintain Itaú's institutional website with VWO, ContentStack, and Bynder."
 TimelineSection.displayName = "TimelineSection"
 
 export default TimelineSection
-
