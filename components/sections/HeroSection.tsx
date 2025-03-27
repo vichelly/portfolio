@@ -13,13 +13,18 @@ const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(({ scrollToSection
   const olhoRef = useRef<HTMLSpanElement>(null) // Referência para o olho
   const [fontSize, setFontSize] = useState(60) // Tamanho da fonte inicial
   const [theme, setTheme] = useState('light') // Estado para controlar o tema
+  const [isMobile, setIsMobile] = useState(false) // Estado para verificar se está em dispositivo móvel
 
   const handleMouseMove = (e: MouseEvent) => {
     setMousePosition({ x: e.clientX, y: e.clientY })
   }
 
   useEffect(() => {
-    document.addEventListener('mousemove', handleMouseMove)
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768); // Atualiza o estado com base na largura da tela
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
 
     // Função para calcular o tamanho da fonte
     const updateFontSize = () => {
@@ -34,15 +39,24 @@ const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(({ scrollToSection
     const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
     setTheme(currentTheme);
 
+    // Verificar se é mobile na primeira renderização
+    checkMobile();
+
     // Atualizar o tamanho da fonte ao redimensionar a tela
-    window.addEventListener('resize', updateFontSize)
-    updateFontSize()
+    window.addEventListener('resize', () => {
+      updateFontSize();
+      checkMobile(); // Verifica se o dispositivo ainda é mobile após redimensionamento
+    });
+
+    // Atualiza o tamanho da fonte
+    updateFontSize();
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('resize', updateFontSize)
+      document.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('resize', updateFontSize);
+      window.removeEventListener('resize', checkMobile);
     }
-  }, [])
+  }, []);
 
   // Raio do olho e da pupila, agora dependente do tamanho da fonte
   const eyeRadius = fontSize * 0.4; // O olho será 30% do tamanho da fonte
@@ -77,7 +91,7 @@ const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(({ scrollToSection
   }
 
   // Calculando a posição da pupila com base no mouse
-  const pupilPosition = calculatePupilPosition(mousePosition.x, mousePosition.y);
+  const pupilPosition = !isMobile ? calculatePupilPosition(mousePosition.x, mousePosition.y) : { x: 0, y: 0 };
 
   return (
     <section id="home" ref={ref} className="relative h-screen flex items-center justify-center overflow-hidden pt-16">
@@ -90,15 +104,16 @@ const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(({ scrollToSection
         <h1 className="text-5xl md:text-7xl font-bold mb-6">
           VIT
           <span className="olho" ref={olhoRef}>
-            <div
-              className={`pupila ${theme === 'dark' ? 'bg-white' : 'bg-black'}`} // Altera a cor da pupila com base no tema
-              style={{
-                transform: `translate(${pupilPosition.x}px, ${pupilPosition.y}px)` // Aplica o cálculo da posição da pupila
-              }}
-            ></div>
+            {!isMobile && (
+              <div
+                className={`pupila ${theme === 'dark' ? 'bg-white' : 'bg-black'}`} // Altera a cor da pupila com base no tema
+                style={{
+                  transform: `translate(${pupilPosition.x}px, ${pupilPosition.y}px)` // Aplica o cálculo da posição da pupila
+                }}
+              ></div>
+            )}
           </span>
           R 
-          
           LUCAS
         </h1>
         <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto text-muted-foreground">
