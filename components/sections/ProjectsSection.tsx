@@ -9,9 +9,9 @@ const ProjectsSection = forwardRef<HTMLElement>((props, ref) => {
     {
       title: "PowerLifting Personal Records API",
       description: "User registration API and data related to their personal records in powerlifting exercises.",
-      tags: ["Java","Springboot","Lambok","PostgreeSQL"],
-      image: "/pr.png?height=300&width=500",
-      link: "https://github.com/vichelly/my-powerlifting-personal-records",
+      tags: ["Java","Springboot","Lambok","PostgreeSQL","Flask","Gemini AI","Angular"],
+      image: "/projectspringpr.png?height=300&width=500",
+      link: "https://www.linkedin.com/feed/update/urn:li:activity:7314102784411295744/",
       github: "https://github.com/vichelly/my-powerlifting-personal-records",
     },
     {
