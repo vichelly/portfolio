@@ -10,6 +10,7 @@ import Hub from "@/components/world/Hub"
 import ZoneFloor from "@/components/world/ZoneFloor"
 import RoomSign from "@/components/world/RoomSign"
 import Decor from "@/components/world/Decor"
+import AnimatedPanel from "@/components/world/AnimatedPanel"
 import ExperienceRoom from "@/components/world/rooms/ExperienceRoom"
 import SkillsRoom from "@/components/world/rooms/SkillsRoom"
 import CertificationsRoom from "@/components/world/rooms/CertificationsRoom"
@@ -17,6 +18,7 @@ import ProjectsRoom from "@/components/world/rooms/ProjectsRoom"
 import WorldUI from "@/components/world/WorldUI"
 import { useMovementInput } from "@/lib/input/useMovementInput"
 import { useInputModeDetection } from "@/lib/input/useInputModeDetection"
+import { useJourneyProgress } from "@/lib/input/useJourneyProgress"
 import { useWorldStore, type RoomId } from "@/lib/world-store"
 import { WORLD_BOUNDS_RADIUS, ZONES, activeZoneAt, distanceToZone, zoneFor } from "@/lib/world/layout"
 
@@ -38,9 +40,14 @@ export default function World() {
   const lastZone = useRef<RoomId>("hub")
   const [nearbyRooms, setNearbyRooms] = useState<Set<RoomId>>(new Set())
   const [parkourActive, setParkourActive] = useState(false)
+  const [avatarPosition, setAvatarPosition] = useState<[number, number, number] | null>(null)
+
+  const journeyProgress = useJourneyProgress(avatarPosition)
 
   const handleMove = useCallback(
     (x: number, z: number) => {
+      setAvatarPosition([x, 0, z])
+
       const zone = activeZoneAt(x, z)
       if (zone !== lastZone.current) {
         lastZone.current = zone
@@ -109,6 +116,29 @@ export default function World() {
         </mesh>
 
         <Decor />
+
+        {/* Journey path visualization - glowing trail markers */}
+        <group>
+          {/* Waypoint markers with glow */}
+          <mesh position={[0, 0.1, 6]}>
+            <sphereGeometry args={[0.4, 16, 16]} />
+            <meshStandardMaterial color="#4dd0e1" emissive="#2dd4e1" emissiveIntensity={0.5} />
+          </mesh>
+          <mesh position={[-8, 0.1, -15]}>
+            <sphereGeometry args={[0.4, 16, 16]} />
+            <meshStandardMaterial color="#4dd0e1" emissive="#2dd4e1" emissiveIntensity={0.5} />
+          </mesh>
+          <mesh position={[0, 0.1, -30]}>
+            <sphereGeometry args={[0.4, 16, 16]} />
+            <meshStandardMaterial color="#4dd0e1" emissive="#2dd4e1" emissiveIntensity={0.5} />
+          </mesh>
+          <mesh position={[22, 0.1, -10]}>
+            <sphereGeometry args={[0.4, 16, 16]} />
+            <meshStandardMaterial color="#4dd0e1" emissive="#2dd4e1" emissiveIntensity={0.5} />
+          </mesh>
+        </group>
+
+        <AnimatedPanel waypoint={journeyProgress.currentWaypoint} isActive={journeyProgress.isActive} />
 
         <Hub avatarRef={avatarRef} onTrigger={handleTrigger} />
         <ZoneFloor zone={zoneFor("parkour")} />
