@@ -1,164 +1,177 @@
 "use client"
 
-import { Suspense, useCallback, useEffect, useRef, useState } from "react"
+import { Suspense, useEffect, useMemo } from "react"
 import dynamic from "next/dynamic"
 import { Canvas } from "@react-three/fiber"
-import { ContactShadows } from "@react-three/drei"
-import Avatar, { type AvatarHandle } from "@/components/world/Avatar"
+import { PerformanceMonitor } from "@react-three/drei"
+import { Text } from "@react-three/drei"
+import Avatar from "@/components/world/Avatar"
 import CameraRig from "@/components/world/CameraRig"
-import Hub from "@/components/world/Hub"
-import ZoneFloor from "@/components/world/ZoneFloor"
-import RoomSign from "@/components/world/RoomSign"
+import Trail from "@/components/world/Trail"
+import Station from "@/components/world/Station"
 import Decor from "@/components/world/Decor"
-import AnimatedPanel from "@/components/world/AnimatedPanel"
-import ExperienceRoom from "@/components/world/rooms/ExperienceRoom"
-import SkillsRoom from "@/components/world/rooms/SkillsRoom"
-import CertificationsRoom from "@/components/world/rooms/CertificationsRoom"
-import ProjectsRoom from "@/components/world/rooms/ProjectsRoom"
+import Sky from "@/components/world/Sky"
+import Terrain from "@/components/world/Terrain"
+import Dust from "@/components/world/Dust"
+import Effects from "@/components/world/Effects"
+import { ContactShadows } from "@react-three/drei"
+import { useQualityTier } from "@/lib/world/quality"
 import WorldUI from "@/components/world/WorldUI"
 import { useMovementInput } from "@/lib/input/useMovementInput"
 import { useInputModeDetection } from "@/lib/input/useInputModeDetection"
-import { useJourneyProgress } from "@/lib/input/useJourneyProgress"
-import { useWorldStore, type RoomId } from "@/lib/world-store"
-import { WORLD_BOUNDS_RADIUS, ZONES, activeZoneAt, distanceToZone, zoneFor } from "@/lib/world/layout"
+import { useWorldStore } from "@/lib/world-store"
+import { PALETTE, DETOUR_ACCENT, SUN_POSITION } from "@/lib/world/theme"
+import { FONT_BOLD, FONT_REGULAR } from "@/lib/world/panelLayout"
+import {
+  DETOUR_BRANCH_T,
+  DETOUR_ENTRANCE,
+  STATION_ANCHORS,
+  stationsInMountWindow,
+} from "@/lib/world/trail"
+import { assertContentCoverage } from "@/lib/world/stations"
+import { UI } from "@/lib/i18n/strings"
+import { t, type Locale } from "@/lib/i18n/locale"
 
-const SKY_COLOR = "#a9d9f0"
-
-const ParkourZone = dynamic(() => import("@/components/world/parkour/ParkourZone"), {
+const ParkourCourse = dynamic(() => import("@/components/world/parkour/ParkourCourse"), {
   ssr: false,
   loading: () => null,
 })
 
+/** How close to the branch (in trail `t`) the course starts existing. */
+const COURSE_MOUNT_WINDOW = 0.06
+
+function DetourSign({ locale }: { locale: Locale }) {
+  return (
+    <group position={[DETOUR_ENTRANCE.x + 1.5, 0, DETOUR_ENTRANCE.z + 1]} rotation={[0, -0.5, 0]}>
+      <mesh position={[0, 1.3, 0]} castShadow>
+        <cylinderGeometry args={[0.1, 0.13, 2.6, 6]} />
+        <meshStandardMaterial color={PALETTE.stoneDark} flatShading />
+      </mesh>
+      <mesh position={[0, 2.7, 0]} castShadow>
+        <boxGeometry args={[3.4, 0.9, 0.12]} />
+        <meshStandardMaterial
+          color={PALETTE.panel}
+          emissive={DETOUR_ACCENT}
+          emissiveIntensity={0.25}
+          flatShading
+        />
+      </mesh>
+      <Text
+        font={FONT_BOLD}
+        fontSize={0.3}
+        color={DETOUR_ACCENT}
+        anchorX="center"
+        anchorY="middle"
+        position={[0, 2.84, 0.07]}
+      >
+        {t(UI.detourSign, locale)}
+      </Text>
+      <Text
+        font={FONT_REGULAR}
+        fontSize={0.19}
+        color={PALETTE.textMuted}
+        anchorX="center"
+        anchorY="middle"
+        position={[0, 2.52, 0.07]}
+      >
+        {t(UI.detourSignSub, locale)}
+      </Text>
+    </group>
+  )
+}
+
 export default function World() {
-  const avatarRef = useRef<AvatarHandle>(null)
-  const { vector, setTouchVector, setTouchJump } = useMovementInput()
+  const input = useMovementInput()
   useInputModeDetection()
 
-  const setActiveRoom = useWorldStore((s) => s.setActiveRoom)
-  const openPanel = useWorldStore((s) => s.openPanel)
+  const { settings, stepDown } = useQualityTier()
+  const progressPercent = useWorldStore((s) => s.progressPercent)
+  const locale = useWorldStore((s) => s.locale)
+  const containment = useWorldStore((s) => s.containment)
 
-  const lastZone = useRef<RoomId>("hub")
-  const [nearbyRooms, setNearbyRooms] = useState<Set<RoomId>>(new Set())
-  const [parkourActive, setParkourActive] = useState(false)
-  const [avatarPosition, setAvatarPosition] = useState<[number, number, number] | null>(null)
-
-  const journeyProgress = useJourneyProgress(avatarPosition)
-
-  const handleMove = useCallback(
-    (x: number, z: number) => {
-      setAvatarPosition([x, 0, z])
-
-      const zone = activeZoneAt(x, z)
-      if (zone !== lastZone.current) {
-        lastZone.current = zone
-        setActiveRoom(zone)
-      }
-
-      const next = new Set<RoomId>()
-      for (const z_ of ZONES) {
-        if (z_.id === "hub") continue
-        if (distanceToZone(x, z, z_) <= z_.activationRadius) next.add(z_.id)
-      }
-      setNearbyRooms((prev) => {
-        if (prev.size === next.size && [...prev].every((r) => next.has(r))) return prev
-        return next
-      })
-
-      // Uses the same containment radius as activeZoneAt(), so physics takes
-      // over avatar position exactly when activeRoom becomes "parkour" -
-      // never earlier, avoiding a fight over position with Avatar's own
-      // ground-movement useFrame.
-      const inParkour = distanceToZone(x, z, zoneFor("parkour")) <= zoneFor("parkour").radius
-      setParkourActive((prev) => (prev === inParkour ? prev : inParkour))
-    },
-    [setActiveRoom],
-  )
-
-  const handleTrigger = useCallback(
-    (id: string) => {
-      openPanel(id)
-    },
-    [openPanel],
-  )
+  // Station mounting is driven by whole-percent progress, so the scene graph
+  // changes a handful of times per trail rather than every frame.
+  const mounted = useMemo(() => stationsInMountWindow(progressPercent / 100), [progressPercent])
+  const courseNearby =
+    containment === "detour" ||
+    Math.abs(progressPercent / 100 - DETOUR_BRANCH_T) < COURSE_MOUNT_WINDOW
 
   useEffect(() => {
-    // Ensure the store reflects "hub" at mount even before the first move event.
-    setActiveRoom("hub")
-  }, [setActiveRoom])
+    // Career content going missing is the one failure the world must not ship.
+    if (process.env.NODE_ENV !== "production") assertContentCoverage()
+  }, [])
 
   return (
-    <div className="fixed inset-0 h-dvh w-dvw overflow-hidden" style={{ background: SKY_COLOR }}>
-      <Canvas shadows dpr={[1, 2]} camera={{ fov: 55, near: 0.1, far: 200 }}>
-        <color attach="background" args={[SKY_COLOR]} />
-        <fog attach="fog" args={[SKY_COLOR, 35, 130]} />
+    <div className="fixed inset-0 h-dvh w-dvw overflow-hidden" style={{ background: PALETTE.skyHaze }}>
+      <Canvas shadows dpr={[1, settings.dprCap]} camera={{ fov: 55, near: 0.1, far: 260 }}>
+        {/* Only ever steps down: a tier whose cost straddles the target would
+            otherwise flip back and forth forever. */}
+        <PerformanceMonitor onDecline={stepDown} />
 
-        <hemisphereLight args={["#cfe9ff", "#8a6b3d", 0.65]} />
-        <ambientLight intensity={0.35} />
+        <color attach="background" args={[PALETTE.skyHaze]} />
+        {/* Fog takes the horizon's colour, not the zenith's - that is what
+            makes a far ridge sit in front of the sky instead of dissolving
+            into it. Exponential, so the falloff reads as depth of air. */}
+        <fogExp2 attach="fog" args={[PALETTE.skyHaze, 0.0068]} />
+
+        <Sky />
+
+        <hemisphereLight args={[PALETTE.skyMid, PALETTE.terrainHigh, 0.55]} />
+        <ambientLight intensity={0.26} />
         <directionalLight
-          position={[18, 24, 12]}
-          intensity={1.4}
+          position={SUN_POSITION.toArray()}
+          color={PALETTE.sun}
+          intensity={2.8}
           castShadow
-          shadow-mapSize={[1024, 1024]}
-          shadow-camera-left={-60}
-          shadow-camera-right={60}
-          shadow-camera-top={60}
-          shadow-camera-bottom={-60}
-          shadow-bias={-0.0015}
+          shadow-mapSize={[settings.shadowMapSize, settings.shadowMapSize]}
+          shadow-camera-left={-70}
+          shadow-camera-right={70}
+          shadow-camera-top={70}
+          shadow-camera-bottom={-70}
+          shadow-camera-far={300}
+          shadow-bias={-0.0012}
+          shadow-normalBias={0.02}
         />
 
-        <Avatar ref={avatarRef} movementVector={vector} onMove={handleMove} />
-        <ContactShadows position={[0, 0.02, 0]} opacity={0.35} scale={140} blur={2} far={20} />
-        <CameraRig target={avatarRef} />
+        {/* Terrain the trail is cut into. Relief only outside the corridor. */}
+        <Terrain segments={settings.terrainSegments} />
 
-        <mesh position={[0, -0.05, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-          <circleGeometry args={[WORLD_BOUNDS_RADIUS + 15, 48]} />
-          <meshStandardMaterial color="#6fae4f" flatShading />
-        </mesh>
+        <Trail />
+        <Decor density={settings.decorDensity} />
 
-        <Decor />
+        {/* Everything that renders text suspends while the font loads, so it
+            sits behind its own boundary - the world itself never waits on it. */}
+        <Suspense fallback={null}>
+          <DetourSign locale={locale} />
 
-        {/* Journey path visualization - glowing trail markers */}
-        <group>
-          {/* Waypoint markers with glow */}
-          <mesh position={[0, 0.1, 6]}>
-            <sphereGeometry args={[0.4, 16, 16]} />
-            <meshStandardMaterial color="#4dd0e1" emissive="#2dd4e1" emissiveIntensity={0.5} />
-          </mesh>
-          <mesh position={[-8, 0.1, -15]}>
-            <sphereGeometry args={[0.4, 16, 16]} />
-            <meshStandardMaterial color="#4dd0e1" emissive="#2dd4e1" emissiveIntensity={0.5} />
-          </mesh>
-          <mesh position={[0, 0.1, -30]}>
-            <sphereGeometry args={[0.4, 16, 16]} />
-            <meshStandardMaterial color="#4dd0e1" emissive="#2dd4e1" emissiveIntensity={0.5} />
-          </mesh>
-          <mesh position={[22, 0.1, -10]}>
-            <sphereGeometry args={[0.4, 16, 16]} />
-            <meshStandardMaterial color="#4dd0e1" emissive="#2dd4e1" emissiveIntensity={0.5} />
-          </mesh>
-        </group>
+          {STATION_ANCHORS.map((anchor, index) =>
+            mounted.includes(anchor.id) ? (
+              <Station key={anchor.id} id={anchor.id} anchor={anchor.point} index={index} />
+            ) : null,
+          )}
 
-        <AnimatedPanel waypoint={journeyProgress.currentWaypoint} isActive={journeyProgress.isActive} />
+          {courseNearby && <ParkourCourse />}
+        </Suspense>
 
-        <Hub avatarRef={avatarRef} onTrigger={handleTrigger} />
-        <ZoneFloor zone={zoneFor("parkour")} />
-        <RoomSign zone={zoneFor("parkour")} height={5} />
+        <Dust count={settings.dustCount} />
 
-        {nearbyRooms.has("experience") && <ExperienceRoom avatarRef={avatarRef} onTrigger={handleTrigger} />}
-        {nearbyRooms.has("skills") && <SkillsRoom avatarRef={avatarRef} onTrigger={handleTrigger} />}
-        {nearbyRooms.has("certifications") && (
-          <CertificationsRoom avatarRef={avatarRef} onTrigger={handleTrigger} />
-        )}
-        {nearbyRooms.has("projects") && <ProjectsRoom avatarRef={avatarRef} onTrigger={handleTrigger} />}
+        <Avatar input={input} />
+        {/* Cheap contact grounding under the avatar - a tenth of SSAO's cost
+            for most of what SSAO would buy at this art level. */}
+        <ContactShadows
+          position={[0, 0.02, 0]}
+          scale={9}
+          blur={2.4}
+          opacity={0.45}
+          far={6}
+          frames={Infinity}
+        />
+        <CameraRig />
 
-        {nearbyRooms.has("parkour") && (
-          <Suspense fallback={null}>
-            <ParkourZone avatarRef={avatarRef} movementVector={vector} active={parkourActive} onMove={handleMove} />
-          </Suspense>
-        )}
+        <Effects mode={settings.effects} />
       </Canvas>
 
-      <WorldUI setTouchVector={setTouchVector} setTouchJump={setTouchJump} />
+      <WorldUI setTouchVector={input.setTouchVector} setTouchJump={input.setTouchJump} />
     </div>
   )
 }
