@@ -6,6 +6,12 @@ import { Inter } from "next/font/google"
 
 const inter = Inter({ subsets: ["latin"] })
 
+export const metadata: Metadata = {
+  title: "Vitor Lucas Fujita Felício — 3D Portfolio",
+  description:
+    "Walk through an interactive low-poly 3D world to explore Vitor Lucas Fujita Felício's experience, skills, certifications, and projects.",
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
