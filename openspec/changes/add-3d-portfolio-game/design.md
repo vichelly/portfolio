@@ -18,6 +18,16 @@ The current app is a Next.js 15 (App Router) + React 19 site (`app/page.tsx`) co
 
 ## Decisions
 
+### 0. Guided narrative path + animated info panels (UX redesign)
+Instead of free-roaming exploration between disconnected rooms, create a **guided journey path** through the world where:
+- The avatar follows a designed walking path (visual trail/pathway) that connects content in a meaningful sequence
+- Career information is revealed **along the path** in thematic order (timeline → skills → projects → optional parkour challenge)
+- Info boxes are **3D-world-integrated animated panels** (floating holographic displays, sleek panels suspended in space) that fade in/slide in as the avatar approaches or completes a section
+- No popups: panels animate into the scene, stay visible briefly, then fade/slide out as the user continues, keeping immersion unbroken
+- Visual cues (glowing points, directional lights, subtle guidance) draw the avatar along the intended path without forcing movement
+
+This transforms exploration from "click POIs in rooms" to "walk a curated journey that tells your career story interactively."
+
 ### 1. React Three Fiber (R3F) + drei on top of `three`
 Use `@react-three/fiber` for the render loop and scene graph (declarative, integrates with React state/Next.js) and `@react-three/drei` for camera helpers, `useGLTF`/primitives, and pointer/keyboard utilities, instead of hand-rolling an imperative `three` scene inside a `useEffect`.
 - **Alternative considered**: raw `three` imperative setup (more control, more boilerplate, harder to keep in sync with React state like "which info panel is open"). Rejected: R3F's declarative model fits Next.js/React better and is the de facto standard for this use case.
@@ -57,6 +67,8 @@ A single store holds: avatar position/current-room, which info panel (if any) is
 
 ## Risks / Trade-offs
 
+- **[Risk]** Guided path could feel restrictive or on-rails, reducing player agency → **Mitigation**: path is a *suggestion* via visual/audio cues, not a hard barrier; player retains full 3D movement freedom; optional branching to explore parkour or revisit prior content.
+- **[Risk]** Animated panel transitions could distract or feel cluttered if poorly timed → **Mitigation**: stagger animations, use easing curves, keep info on-screen long enough to read (typically 4-6 seconds), fade cleanly, test with real browser at target device performance.
 - **[Risk]** WebGL performance on low-end/older mobile devices → **Mitigation**: low-poly (low triangle count) geometry, flat/toon shading (cheap to render), capped `devicePixelRatio` (e.g., max 2), only the hub + active room's geometry mounted at once, parkour physics lazy-loaded.
 - **[Risk]** No 3D artist means visuals could look plain/generic if only primitives are used → **Mitigation**: lean on strong low-poly color design (bold palette, consistent silhouette language) rather than geometric complexity; leave room to layer in CC0 asset packs later as a follow-up, not a blocker.
 - **[Risk]** Replacing the whole page is a breaking change with no gradual rollout → **Mitigation**: acceptable per explicit user direction ("tudo vai pro lixo"); previous implementation remains recoverable via git history, so rollback is a revert, not a rebuild.
@@ -67,12 +79,14 @@ A single store holds: avatar position/current-room, which info panel (if any) is
 ## Migration Plan
 
 No data migration is involved (static content only). Implementation sequence (elaborated further in tasks.md):
-1. Scene shell: mount a single `<Canvas>` with hub geometry, camera, and lighting; retire `app/page.tsx`'s section-based render tree.
+1. Scene shell: mount a single `<Canvas>` with journey path geometry, camera, and lighting; retire `app/page.tsx`'s section-based render tree.
 2. Avatar + `useMovementInput` + camera-follow + world-bounds collision (avatar-control spec).
 3. Content data modules + non-game fallback overlay (portfolio-world + career-content-discovery specs, minus in-world panels).
-4. Rooms + points-of-interest + in-world info panels wired to the same content data (career-content-discovery spec).
-5. Parkour layer with lazy-loaded physics (parkour-challenge spec).
-6. Mobile/perf pass: device-pixel-ratio cap, asset budget check, bundle-size verification for the parkour chunk.
+4. **Guided journey path**: define path waypoints, visual trail/markers, and progression logic (avatar position triggers next info panel).
+5. **Animated info panels** as 3D world objects (floating planes with text/UI, positioned at path nodes); implement fade-in/slide-in animations and auto-dismiss timing.
+6. Rooms/zones positioned along the path; points-of-interest trigger animated panel reveals as visitor progresses.
+7. Parkour layer with lazy-loaded physics as optional branching challenge (parkour-challenge spec).
+8. Mobile/perf pass: device-pixel-ratio cap, asset budget check, bundle-size verification for the parkour chunk.
 
 **Rollback strategy**: standard git revert of the change's commits; no deployed data/state to unwind since the site is static content only.
 
