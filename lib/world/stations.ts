@@ -1,6 +1,4 @@
 import { experience } from "@/lib/content/experience"
-import { projects } from "@/lib/content/projects"
-import { skills } from "@/lib/content/skills"
 import { contact } from "@/lib/content/contact"
 import { t, type Locale, type Localized } from "@/lib/i18n/locale"
 import type { StationId } from "@/lib/world/trail"
@@ -33,9 +31,9 @@ export interface StationContent {
   entries: StationEntry[]
 }
 
-/** Drops empty and repeated destinations: several projects point their "view"
- *  and "code" links at the same GitHub page, which would otherwise stand in the
- *  world as two identical signs. */
+/** Drops empty and repeated destinations: several entries point their links at
+ *  the same page, which would otherwise stand in the world as two identical
+ *  signs. */
 const dedupeLinks = (links: StationLink[]): StationLink[] =>
   links.filter((l, i) => l.href && links.findIndex((o) => o.href === l.href) === i)
 
@@ -47,12 +45,12 @@ const byId = <T extends { id: string }>(items: T[], id: string): T => {
 
 const LABELS: Record<StationId, Localized> = {
   intro: { en: "Start", pt: "Início" },
-  itau: { en: "Itaú Unibanco", pt: "Itaú Unibanco" },
+  "itau-rpa": { en: "Itaú Unibanco", pt: "Itaú Unibanco" },
+  "itau-intern": { en: "Itaú Unibanco (Intern)", pt: "Itaú Unibanco (Estágio)" },
   "agile-inc": { en: "Agile inc", pt: "Agile inc" },
   fei: { en: "FEI University", pt: "Centro Universitário FEI" },
-  skills: { en: "Skills", pt: "Habilidades" },
+  fiap: { en: "FIAP", pt: "FIAP" },
   certifications: { en: "Certifications", pt: "Certificações" },
-  projects: { en: "Projects", pt: "Projetos" },
   contact: { en: "Contact", pt: "Contato" },
 }
 
@@ -61,15 +59,15 @@ const KICKERS: Record<StationId, Localized> = {
     en: "Vitor Lucas Fujita Felício — software engineer",
     pt: "Vitor Lucas Fujita Felício — engenheiro de software",
   },
-  itau: { en: "Where the work got serious", pt: "Onde o trabalho ficou sério" },
+  "itau-rpa": { en: "Where the work got serious", pt: "Onde o trabalho ficou sério" },
+  "itau-intern": { en: "Where the bank job started", pt: "Onde o trabalho no banco começou" },
   "agile-inc": {
     en: "Two years of shipping across the stack",
     pt: "Dois anos entregando de ponta a ponta",
   },
   fei: { en: "Where it started", pt: "Onde tudo começou" },
-  skills: { en: "The toolbox", pt: "A caixa de ferramentas" },
+  fiap: { en: "What comes next", pt: "O que vem a seguir" },
   certifications: { en: "Official stamps of approval", pt: "Selos oficiais" },
-  projects: { en: "Things that got shipped", pt: "Coisas que foram entregues" },
   contact: { en: "End of the trail — say hello", pt: "Fim da trilha — diga oi" },
 }
 
@@ -99,7 +97,11 @@ const CREDENTIAL: Record<Locale, string> = { en: "Credential", pt: "Credencial" 
 
 /**
  * Every station's content in one language, assembled from lib/content. Station
- * order lives in trail.ts; this file only says what stands at each stop.
+ * order lives in trail.ts; this file only says what stands at each stop. Each
+ * StationId here is one plaza carrying exactly one experience/education/
+ * certification entry - dense zones (Professional Experience, Education &
+ * Certifications) are several plazas walked in sequence rather than one
+ * panel holding several entries, so no panel needs to shrink its type to fit.
  */
 export function stationsFor(locale: Locale): Record<StationId, StationContent> {
   const experienceEntry = (id: string): StationEntry => {
@@ -112,17 +114,42 @@ export function stationsFor(locale: Locale): Record<StationId, StationContent> {
       subtitle: e.company,
       body: (e.summary ? t(e.summary, locale) : full) || undefined,
       full,
+      links: e.links?.length
+        ? dedupeLinks(e.links.map((l) => ({ label: t(l.label, locale), href: l.href })))
+        : undefined,
     }
   }
 
-  const skillEntry = (id: string): StationEntry => {
-    const s = byId(skills, id)
-    return {
-      id: s.id,
-      heading: t(s.title, locale),
-      body: t(s.skills, locale),
-      links: s.link ? [{ label: CREDENTIAL[locale], href: s.link }] : undefined,
+  /**
+   * An experience entry with `highlights` is shown as a compact header card
+   * (period, title, company - no body) plus one short card per highlight,
+   * instead of a single card holding a long paragraph. This is the same
+   * short-entry, multi-column layout that already keeps the certifications
+   * panel readable, applied to entries dense enough to otherwise force the
+   * panel's type below the 16px floor. An entry with no highlights renders
+   * exactly as before, as one card.
+   */
+  const experienceEntries = (id: string): StationEntry[] => {
+    const e = byId(experience, id)
+    if (!e.highlights?.length) return [experienceEntry(id)]
+
+    const full = t(e.description, locale) || undefined
+    const header: StationEntry = {
+      id: e.id,
+      heading: t(e.title, locale),
+      period: e.year,
+      subtitle: e.company,
+      full,
+      links: e.links?.length
+        ? dedupeLinks(e.links.map((l) => ({ label: t(l.label, locale), href: l.href })))
+        : undefined,
     }
+    const highlightEntries = e.highlights.map((h, i) => ({
+      id: `${e.id}-highlight-${i}`,
+      heading: t(h.heading, locale),
+      body: t(h.body, locale),
+    }))
+    return [header, ...highlightEntries]
   }
 
   const station = (id: StationId, entries: StationEntry[]): StationContent => ({
@@ -136,27 +163,12 @@ export function stationsFor(locale: Locale): Record<StationId, StationContent> {
     intro: station("intro", [
       { id: "welcome", heading: WELCOME_HEADING[locale], body: INTRO[locale] },
     ]),
-    itau: station("itau", [experienceEntry("itau-rpa"), experienceEntry("itau")]),
-    "agile-inc": station("agile-inc", [experienceEntry("agile-inc")]),
+    "itau-rpa": station("itau-rpa", experienceEntries("itau-rpa")),
+    "itau-intern": station("itau-intern", experienceEntries("itau")),
+    "agile-inc": station("agile-inc", experienceEntries("agile-inc")),
     fei: station("fei", [experienceEntry("fei")]),
-    skills: station(
-      "skills",
-      skills.filter((s) => s.id !== "agile").map((s) => skillEntry(s.id)),
-    ),
-    certifications: station("certifications", [experienceEntry("pspo"), skillEntry("agile")]),
-    projects: station(
-      "projects",
-      projects.map((p) => ({
-        id: p.id,
-        heading: p.title,
-        body: t(p.description, locale),
-        tags: p.tags,
-        links: dedupeLinks([
-          { label: p.link === p.github ? "GitHub" : locale === "pt" ? "Ver" : "View", href: p.link },
-          { label: "GitHub", href: p.github },
-        ]),
-      })),
-    ),
+    fiap: station("fiap", [experienceEntry("fiap")]),
+    certifications: station("certifications", [experienceEntry("pspo"), experienceEntry("devin-foundations"), experienceEntry("api-owner"), experienceEntry("aws-certifications")]),
     contact: station("contact", [
       {
         id: "contact",
@@ -175,6 +187,10 @@ export function stationListFor(locale: Locale): StationContent[] {
   return Object.values(stationsFor(locale))
 }
 
+/** Ids in `lib/content/experience.ts` that are certifications, gathered onto
+ *  the single `certifications` plaza rather than each getting their own stop. */
+const CERTIFICATION_IDS = ["pspo", "devin-foundations", "api-owner", "aws-certifications"]
+
 /**
  * Fails loudly if any entry in the content data is not placed at a station, or
  * is placed at more than one. Career content going missing is the one failure
@@ -189,8 +205,6 @@ export function assertContentCoverage(locale: Locale = "en") {
 
   const missing: string[] = []
   for (const e of experience) if (!placed.includes(e.id)) missing.push(`experience:${e.id}`)
-  for (const s of skills) if (!placed.includes(s.id)) missing.push(`skill:${s.id}`)
-  for (const p of projects) if (!placed.includes(p.id)) missing.push(`project:${p.id}`)
   if (!placed.includes("contact")) missing.push("contact")
   if (missing.length) {
     throw new Error(`Content not placed at any station: ${missing.join(", ")}`)
@@ -199,7 +213,6 @@ export function assertContentCoverage(locale: Locale = "en") {
   return {
     placed: placed.length,
     experience: experience.length,
-    skills: skills.length,
-    projects: projects.length,
+    certifications: CERTIFICATION_IDS.length,
   }
 }

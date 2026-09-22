@@ -60,12 +60,12 @@ export const SUN_POSITION = SUN_DIRECTION.clone().multiplyScalar(SUN_DISTANCE)
 /** Per-station accent, re-tuned to sit against warm ground rather than green. */
 export const STATION_ACCENT: Record<StationId, string> = {
   intro: "#4fd1c0",
-  itau: "#ff8a3d",
+  "itau-rpa": "#ff8a3d",
+  "itau-intern": "#ffab6e",
   "agile-inc": "#7fa6f0",
   fei: "#8ecf6a",
-  skills: "#3fc9a2",
-  certifications: "#b78ef0",
-  projects: "#f5c451",
+  fiap: "#b78ef0",
+  certifications: "#f5c451",
   contact: "#f57a8a",
 }
 

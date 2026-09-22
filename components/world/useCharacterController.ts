@@ -177,6 +177,7 @@ export function useCharacterController(
     avatarState.containment = containment.current
     avatarState.t = containment.current === "trail" ? projection.t : avatarState.t
     avatarState.station = activeStationAt(avatarState.t)
+    avatarState.facing = s.facing
 
     // The DOM only hears about changes, never about frames.
     const store = useWorldStore.getState()

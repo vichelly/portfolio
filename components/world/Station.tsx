@@ -4,6 +4,7 @@ import { useMemo } from "react"
 import * as THREE from "three"
 import StationPanel from "@/components/world/StationPanel"
 import LinkSignpost from "@/components/world/LinkSignpost"
+import PlazaBadge from "@/components/world/PlazaBadge"
 import { PALETTE, STATION_ACCENT } from "@/lib/world/theme"
 import { PLAZA_RADIUS, STATION_T, TRAIL_CURVE, type StationId } from "@/lib/world/trail"
 import { stationsFor } from "@/lib/world/stations"
@@ -14,6 +15,17 @@ interface StationProps {
   anchor: [number, number]
   /** Index along the trail - used to alternate which side the panel stands on. */
   index: number
+}
+
+/** Short crest label for the plazas that belong to a real employer or
+ *  school - not shown at intro, certifications, or contact, which are not
+ *  tied to a single place. */
+const PLAZA_BADGE: Partial<Record<StationId, string>> = {
+  "itau-rpa": "Itaú",
+  "itau-intern": "Itaú",
+  "agile-inc": "Agile inc",
+  fei: "FEI",
+  fiap: "FIAP",
 }
 
 /** The panel stands past the plaza centre, off to one side: the visitor walks
@@ -143,6 +155,10 @@ export default function Station({ id, anchor, index }: StationProps) {
           accent={accent}
         />
       ))}
+
+      {PLAZA_BADGE[id] && (
+        <PlazaBadge position={panelAnchor} label={PLAZA_BADGE[id]!} accent={accent} />
+      )}
     </group>
   )
 }

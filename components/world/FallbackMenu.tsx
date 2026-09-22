@@ -3,11 +3,20 @@
 import { useEffect, useMemo, useRef } from "react"
 import { X } from "lucide-react"
 import InfoPanel from "@/components/world/InfoPanel"
-import { stationListFor } from "@/lib/world/stations"
+import { stationListFor, type StationEntry } from "@/lib/world/stations"
+import { skills } from "@/lib/content/skills"
 import { useWorldStore } from "@/lib/world-store"
 import { UI } from "@/lib/i18n/strings"
 import { t } from "@/lib/i18n/locale"
 import { PALETTE, STATION_ACCENT } from "@/lib/world/theme"
+
+const SKILLS_HEADING = { en: "Skills", pt: "Habilidades" }
+const SKILLS_KICKER = { en: "The toolbox", pt: "A caixa de ferramentas" }
+const CREDENTIAL = { en: "Credential", pt: "Credencial" }
+/** Skills have no station of their own (they float as ambient text in the
+ *  scene), so the fallback view gives them a fixed accent instead of one
+ *  looked up from STATION_ACCENT. */
+const SKILLS_ACCENT = "#3fc9a2"
 
 interface FallbackMenuProps {
   open: boolean
@@ -24,6 +33,16 @@ export default function FallbackMenu({ open, onClose }: FallbackMenuProps) {
   const closeRef = useRef<HTMLButtonElement>(null)
   const locale = useWorldStore((s) => s.locale)
   const stations = useMemo(() => stationListFor(locale), [locale])
+  const skillEntries = useMemo<StationEntry[]>(
+    () =>
+      skills.map((s) => ({
+        id: s.id,
+        heading: t(s.title, locale),
+        body: t(s.skills, locale),
+        links: s.link ? [{ label: t(CREDENTIAL, locale), href: s.link }] : undefined,
+      })),
+    [locale],
+  )
 
   useEffect(() => {
     if (!open) return
@@ -79,6 +98,20 @@ export default function FallbackMenu({ open, onClose }: FallbackMenuProps) {
             </div>
           </section>
         ))}
+
+        <section className="mb-12">
+          <div className="mb-5">
+            <h2 className="text-xl font-bold text-white">{t(SKILLS_HEADING, locale)}</h2>
+            <p className="text-sm" style={{ color: SKILLS_ACCENT }}>
+              {t(SKILLS_KICKER, locale)}
+            </p>
+          </div>
+          <div className="space-y-4">
+            {skillEntries.map((entry) => (
+              <InfoPanel key={entry.id} entry={entry} accent={SKILLS_ACCENT} />
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   )

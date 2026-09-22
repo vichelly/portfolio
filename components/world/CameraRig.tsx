@@ -38,13 +38,23 @@ export default function CameraRig() {
   const desired = useRef(new THREE.Vector3())
   const target = useRef(new THREE.Vector3())
   const forward = useRef(new THREE.Vector3(0, 0, -1))
+  const rawForward = useRef(new THREE.Vector3(0, 0, -1))
   const lookScratch = useRef(new THREE.Vector3())
   const smoothedY = useRef(0)
   const framing = useRef(0)
 
   useFrame((_, delta) => {
-    const tangent = TRAIL_CURVE.getTangentAt(THREE.MathUtils.clamp(avatarState.t, 0, 1))
-    forward.current.lerp(tangent.setY(0).normalize(), 1 - Math.exp(-4 * delta))
+    // On the trail, forward comes from the trail curve itself - t always
+    // reflects where the avatar actually is. Inside the parkour detour, t is
+    // frozen at the point of entry (it is arc-length along the MAIN trail,
+    // which the avatar has left), so it cannot supply a heading there; the
+    // avatar's own movement-derived facing is used instead.
+    if (avatarState.containment === "detour") {
+      rawForward.current.set(Math.sin(avatarState.facing), 0, Math.cos(avatarState.facing))
+    } else {
+      rawForward.current.copy(TRAIL_CURVE.getTangentAt(THREE.MathUtils.clamp(avatarState.t, 0, 1)))
+    }
+    forward.current.lerp(rawForward.current.setY(0).normalize(), 1 - Math.exp(-4 * delta))
 
     // Vertical follow is damped separately and more slowly than the horizontal
     // follow, so a jump arc reads as the avatar rising rather than the world

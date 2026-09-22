@@ -13,6 +13,7 @@ import Decor from "@/components/world/Decor"
 import Sky from "@/components/world/Sky"
 import Terrain from "@/components/world/Terrain"
 import Dust from "@/components/world/Dust"
+import SkillMotes from "@/components/world/SkillMotes"
 import Effects from "@/components/world/Effects"
 import { ContactShadows } from "@react-three/drei"
 import { useQualityTier } from "@/lib/world/quality"
@@ -143,6 +144,7 @@ export default function World() {
             sits behind its own boundary - the world itself never waits on it. */}
         <Suspense fallback={null}>
           <DetourSign locale={locale} />
+          <SkillMotes locale={locale} />
 
           {STATION_ANCHORS.map((anchor, index) =>
             mounted.includes(anchor.id) ? (

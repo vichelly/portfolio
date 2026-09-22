@@ -2,12 +2,12 @@ import * as THREE from "three"
 
 export type StationId =
   | "intro"
-  | "itau"
+  | "itau-rpa"
+  | "itau-intern"
   | "agile-inc"
   | "fei"
-  | "skills"
+  | "fiap"
   | "certifications"
-  | "projects"
   | "contact"
 
 export interface StationAnchor {
@@ -22,13 +22,13 @@ export interface StationAnchor {
  */
 export const STATION_ANCHORS: StationAnchor[] = [
   { id: "intro", point: [0, 4] },
-  { id: "itau", point: [0, -16] },
-  { id: "agile-inc", point: [-7, -34] },
-  { id: "fei", point: [0, -52] },
-  { id: "skills", point: [7, -72] },
-  { id: "certifications", point: [0, -92] },
-  { id: "projects", point: [-7, -110] },
-  { id: "contact", point: [0, -128] },
+  { id: "itau-rpa", point: [0, -16] },
+  { id: "itau-intern", point: [-7, -34] },
+  { id: "agile-inc", point: [7, -52] },
+  { id: "fei", point: [0, -70] },
+  { id: "fiap", point: [-7, -88] },
+  { id: "certifications", point: [7, -106] },
+  { id: "contact", point: [0, -124] },
 ]
 
 /** Corridor half width between plazas - narrow enough to read as guided. */
@@ -57,13 +57,17 @@ export const TRAIL_CURVE = buildCurve([
 
 export const TRAIL_LENGTH = TRAIL_CURVE.getLength()
 
-/** The parkour detour: branches off the main trail between FEI and Skills. */
+/** The parkour detour: branches off the main trail between FEI and FIAP. The
+ *  arena end point is kept > DETOUR_ARENA_RADIUS away from every plaza anchor
+ *  (fiap and certifications in particular, the two closest) - the arena's
+ *  containment radius otherwise reaches into a neighbouring plaza and the
+ *  world reports "Parkour detour" while the avatar is standing at a station. */
 export const DETOUR_CURVE = buildCurve([
-  [1.5, -61],
-  [11, -61.5],
-  [21, -66],
-  [28, -76],
-  [30, -88],
+  [1.5, -79],
+  [11, -79.5],
+  [21, -84],
+  [27, -88],
+  [32, -90],
 ])
 
 export const DETOUR_LENGTH = DETOUR_CURVE.getLength()

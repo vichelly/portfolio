@@ -20,6 +20,11 @@ export const avatarState = {
   grounded: true,
   containment: "trail" as Containment,
   station: null as StationId | null,
+  /** World-space facing angle (radians), derived from the avatar's own
+   *  movement. Published every frame regardless of containment, so the
+   *  camera can orient itself from real movement while off the main trail,
+   *  where trail arc-length `t` stops advancing and cannot supply a heading. */
+  facing: 0,
   /** Set by anything that needs to place the avatar; the controller consumes it. */
   teleport: null as { x: number; y: number; z: number } | null,
   /** Height of the panel currently on screen, 0 when none. The camera frames
