@@ -110,23 +110,21 @@ export const experience: ExperienceEntry[] = [
       en:
         "Digital Achievement - Conquista PF · AWS, Python, AngularJS\n\n" +
         "Built Jarvis end to end: a Lambda crawler and SEO checks in Python/Flask, an LLM call for the analysis, an Angular front end on S3.\n" +
-        "Rebuilt the Vault login front end on the corporate design system and moved it off EC2 to static S3 hosting.",
+        "Maintained components on Itaú's blog and institutional website.",
       pt:
         "Digital Achievement - Conquista PF · AWS, Python, AngularJS\n\n" +
         "Desenvolvi o Jarvis de ponta a ponta: crawler em Lambda e checagens de SEO em Python/Flask, chamada a LLM para a análise e front-end Angular no S3.\n" +
-        "Reconstruí o front-end do login do Vault sobre o design system corporativo e tirei da EC2 para hospedagem estática em S3.",
+        "Manutenção de componentes no blog e no site institucional do Itaú.",
     },
     description: {
       en:
         "Digital Achievement - Itaú Portal Management, Conquista PF · AWS, Python, AngularJS, TypeScript\n\n" +
         "Built Jarvis, a web application for SEO analysis of Itaú's non-logged portal, working across both ends. Back end: a crawler in an AWS Lambda collects the HTML of a submitted URL, runs SEO checks, and a second Lambda calls ChatGPT for the analysis, in Python with Flask. Front end: Angular components following the bank's IDS conventions, hosted from an S3 bucket.\n\n" +
-        "Maintained Itaú's institutional website with VWO, ContentStack and Bynder, and exposed new open API routes through API Gateway using the iara SDK.\n\n" +
-        "Vault login modernization, the last project of the internship: rebuilt the entire front end of a business-critical, high-risk internal login application on Itaú's corporate design system, replacing a legacy interface, and migrated hosting from a self-managed EC2 instance to a static S3 deployment.",
+        "Maintained components on Itaú's institutional website and blog, working with VWO, ContentStack and Bynder, and exposed new open API routes through API Gateway using the iara SDK.",
       pt:
         "Digital Achievement - Gestão do Portal Itaú, Conquista PF · AWS, Python, AngularJS, TypeScript\n\n" +
         "Desenvolvi o Jarvis, aplicação web para análise de SEO das páginas do portal não logado do Itaú, atuando nas duas pontas. Back-end: um crawler em AWS Lambda coleta o HTML da URL enviada, roda as verificações de SEO e uma segunda Lambda chama o ChatGPT para a análise, em Python com Flask. Front-end: componentes em Angular seguindo as convenções do IDS do banco, hospedados em um bucket S3.\n\n" +
-        "Mantive o site institucional do Itaú com VWO, ContentStack e Bynder, e disponibilizei novas rotas de API aberta via API Gateway usando o iara SDK.\n\n" +
-        "Modernização do login do Vault, último projeto do estágio: reconstruí todo o front-end de uma aplicação interna crítica e de alto risco sobre o design system corporativo do Itaú, substituindo uma interface legada, e migrei a hospedagem de uma instância EC2 autogerenciada para deploy estático em S3.",
+        "Mantive componentes do site institucional e do blog do Itaú, trabalhando com VWO, ContentStack e Bynder, e disponibilizei novas rotas de API aberta via API Gateway usando o iara SDK.",
     },
     highlights: [
       {
@@ -137,10 +135,10 @@ export const experience: ExperienceEntry[] = [
         },
       },
       {
-        heading: { en: "Vault login rebuild", pt: "Reconstrução do login do Vault" },
+        heading: { en: "Blog & institutional site", pt: "Blog & site institucional" },
         body: {
-          en: "Front end rebuilt on the corporate design system. Hosting: EC2 → static S3.",
-          pt: "Front-end reconstruído sobre o design system corporativo. Hospedagem: EC2 → S3 estático.",
+          en: "Maintained components on Itaú's blog and institutional website (VWO, ContentStack, Bynder).",
+          pt: "Manutenção de componentes no blog e no site institucional do Itaú (VWO, ContentStack, Bynder).",
         },
       },
     ],
@@ -240,17 +238,46 @@ export const experience: ExperienceEntry[] = [
       pt: "Bacharelado em Ciência da Computação",
     },
     company: "FEI University Center",
+    summary: {
+      en:
+        "Pursued a Computer Science degree at one of Brazil's leading engineering schools, specializing in software development, artificial intelligence, and cutting-edge technologies.\n\n" +
+        "TCC (senior thesis): Atena, a teleoperated humanoid robot.\n" +
+        "Course projects: WorkAround and Gastly Busters.",
+      pt:
+        "Graduação em Ciência da Computação em uma das principais escolas de engenharia do Brasil, com foco em desenvolvimento de software, inteligência artificial e tecnologias de ponta.\n\n" +
+        "TCC: Atena, um robô humanoide teleoperado.\n" +
+        "Projetos do curso: WorkAround e Gastly Busters.",
+    },
     description: {
       en:
-        "Pursued a Computer Science degree at one of Brazil's leading engineering schools, specializing in software development, artificial intelligence, and cutting-edge technologies. Closed the degree with a TCC (senior thesis) built with friends from the program.\n\n" +
+        "Pursued a Computer Science degree at one of Brazil's leading engineering schools, specializing in software development, artificial intelligence, and cutting-edge technologies.\n\n" +
+        "TCC (senior thesis): Atena, a teleoperated humanoid robot built on the open-source InMoov platform, replicating a human operator's arm, forearm and hand movements in real time. Computer vision (MediaPipe and a ZED camera) captures the operator's body landmarks and gestures; the data is published over MQTT and consumed by a ROS2 control system, which drives the robot's actuators, including Dynamixel motors and a PCA9685 board. Built with a team, split across a Windows computer-vision/publisher pipeline and a Linux ROS2/subscriber pipeline.\n\n" +
         "Course projects: WorkAround, a service-marketplace platform covering use-case modeling, Figma prototyping, and software engineering practice; and Gastly Busters, a browser game built in the first semester with plain JavaScript and Canvas.",
       pt:
-        "Graduação em Ciência da Computação em uma das principais escolas de engenharia do Brasil, com foco em desenvolvimento de software, inteligência artificial e tecnologias de ponta. Encerrei o curso com um TCC desenvolvido com amigos de turma.\n\n" +
+        "Graduação em Ciência da Computação em uma das principais escolas de engenharia do Brasil, com foco em desenvolvimento de software, inteligência artificial e tecnologias de ponta.\n\n" +
+        "TCC: Atena, um robô humanoide teleoperado construído sobre a plataforma open-source InMoov, que replica em tempo real os movimentos dos braços, antebraços e mãos de um operador humano. A visão computacional (MediaPipe e câmera ZED) captura os marcos corporais e gestos do operador; os dados são publicados via MQTT e consumidos por um sistema de controle em ROS2, que aciona os atuadores do robô, incluindo motores Dynamixel e uma placa PCA9685. Desenvolvido em equipe, dividido entre um pipeline de visão computacional/publisher no Windows e um pipeline ROS2/subscriber no Linux.\n\n" +
         "Projetos do curso: WorkAround, uma plataforma de marketplace de serviços com modelagem de casos de uso, prototipação no Figma e prática de engenharia de software; e Gastly Busters, um jogo de navegador feito no primeiro semestre com JavaScript puro e Canvas.",
     },
     links: [
+      { label: { en: "Atena — TCC (GitHub)", pt: "Atena — TCC (GitHub)" }, href: "https://github.com/fei-atena/fei-atena-tcc" },
       { label: { en: "WorkAround (wiki)", pt: "WorkAround (wiki)" }, href: "https://github.com/vichelly/WorkAround_B2C/wiki" },
       { label: { en: "Gastly Busters (play)", pt: "Gastly Busters (jogar)" }, href: "https://vichelly.github.io/gastly-busters/jogo.html" },
+    ],
+    highlights: [
+      {
+        heading: { en: "TCC — Atena (teleoperated robot)", pt: "TCC — Atena (robô teleoperado)" },
+        body: {
+          en: "Humanoid robot (InMoov) mirrors an operator's arm movements via MediaPipe + ZED, MQTT and ROS2.",
+          pt: "Robô humanoide (InMoov) replica os movimentos dos braços do operador via MediaPipe + ZED, MQTT e ROS2.",
+        },
+      },
+      {
+        heading: { en: "Course projects", pt: "Projetos do curso" },
+        body: {
+          en: "WorkAround, a service marketplace; Gastly Busters, a first-semester browser game.",
+          pt: "WorkAround, marketplace de serviços; Gastly Busters, jogo de navegador do primeiro semestre.",
+        },
+      },
     ],
   },
   {

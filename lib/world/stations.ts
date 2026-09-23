@@ -166,7 +166,7 @@ export function stationsFor(locale: Locale): Record<StationId, StationContent> {
     "itau-rpa": station("itau-rpa", experienceEntries("itau-rpa")),
     "itau-intern": station("itau-intern", experienceEntries("itau")),
     "agile-inc": station("agile-inc", experienceEntries("agile-inc")),
-    fei: station("fei", [experienceEntry("fei")]),
+    fei: station("fei", experienceEntries("fei")),
     fiap: station("fiap", [experienceEntry("fiap")]),
     certifications: station("certifications", [experienceEntry("pspo"), experienceEntry("devin-foundations"), experienceEntry("api-owner"), experienceEntry("aws-certifications")]),
     contact: station("contact", [
