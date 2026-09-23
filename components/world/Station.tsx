@@ -17,16 +17,20 @@ interface StationProps {
   index: number
 }
 
-/** Short crest label for the plazas that belong to a real employer or
- *  school - not shown at intro, certifications, or contact, which are not
- *  tied to a single place. */
+/** Real employer/school logo for the plazas tied to a single place - not
+ *  shown at intro, certifications, or contact, which aren't. */
 const PLAZA_BADGE: Partial<Record<StationId, string>> = {
-  "itau-rpa": "Itaú",
-  "itau-intern": "Itaú",
-  "agile-inc": "Agile inc",
-  fei: "FEI",
-  fiap: "FIAP",
+  "itau-rpa": "/logos/itau.jpg",
+  "itau-intern": "/logos/itau.jpg",
+  "agile-inc": "/logos/agile-inc.jpg",
+  fei: "/logos/fei.jpg",
+  fiap: "/logos/fiap.jpg",
 }
+
+/** Daily tools, shown as a small row of icons above the certifications
+ *  plaza rather than as their own badge slot. */
+const TOOL_ICONS = ["/logos/devin.jpg", "/logos/claude.png"]
+const TOOL_ICON_SPACING = 2.1
 
 /** The panel stands past the plaza centre, off to one side: the visitor walks
  *  toward it, reads it head-on, and then walks past it. */
@@ -157,8 +161,21 @@ export default function Station({ id, anchor, index }: StationProps) {
       ))}
 
       {PLAZA_BADGE[id] && (
-        <PlazaBadge position={panelAnchor} label={PLAZA_BADGE[id]!} accent={accent} />
+        <PlazaBadge position={panelAnchor} image={PLAZA_BADGE[id]!} accent={accent} />
       )}
+
+      {id === "certifications" &&
+        TOOL_ICONS.map((image, i) => (
+          <PlazaBadge
+            key={image}
+            position={[
+              panelAnchor[0] + (i - (TOOL_ICONS.length - 1) / 2) * TOOL_ICON_SPACING,
+              panelAnchor[1],
+            ]}
+            image={image}
+            accent={accent}
+          />
+        ))}
     </group>
   )
 }
