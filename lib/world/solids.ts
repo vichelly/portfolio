@@ -2,9 +2,9 @@ import type { Solid } from "@/lib/world/physics"
 
 /**
  * Collision geometry currently present in the world, keyed by whatever mounted
- * it. The trail itself contributes nothing - it is flat - so this is empty
- * unless the parkour course is mounted. Kept outside React state because the
- * character controller reads it every frame.
+ * it. The trail surface itself contributes nothing - it is flat - so this holds
+ * whatever stands on top of it, currently the trail obstacles within the mount
+ * window. Kept outside React state because the controller reads it every frame.
  */
 const registry = new Map<string, Solid[]>()
 let flattened: Solid[] = []

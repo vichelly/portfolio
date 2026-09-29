@@ -128,13 +128,31 @@ export function makeSurface(
          varying vec3 vSurfWorld;
          uniform float uTime;
          uniform float uSway;
-         uniform float uSwayHeight;`,
+         uniform float uSwayHeight;
+
+         // The matrix that actually places this vertex in the world.
+         //
+         // For an ordinary mesh that is modelMatrix. For an InstancedMesh it
+         // is NOT: modelMatrix is the batch's own transform (identity, for
+         // anything added at scene level) and the per-prop placement lives in
+         // instanceMatrix. Reading modelMatrix alone would sample this
+         // material's noise at every instance's *local* position, so every
+         // tree in the world would carry the identical patch of grain, and
+         // every leaf would sway in perfect unison - exactly the uniformity
+         // the procedural detail exists to avoid.
+         mat4 surfaceModelMatrix() {
+           #ifdef USE_INSTANCING
+             return modelMatrix * instanceMatrix;
+           #else
+             return modelMatrix;
+           #endif
+         }`,
       )
       .replace(
         "#include <begin_vertex>",
         `#include <begin_vertex>
          if (uSway > 0.0) {
-           vec3 origin = (modelMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+           vec3 origin = (surfaceModelMatrix() * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
            // Phase from world position: neighbouring props never move in step.
            float phase = origin.x * 0.7 + origin.z * 0.55;
            float amount = clamp(transformed.y / uSwayHeight, 0.0, 1.0);
@@ -146,7 +164,7 @@ export function makeSurface(
       .replace(
         "#include <worldpos_vertex>",
         `#include <worldpos_vertex>
-         vSurfWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;`,
+         vSurfWorld = (surfaceModelMatrix() * vec4(transformed, 1.0)).xyz;`,
       )
 
     shader.fragmentShader = shader.fragmentShader

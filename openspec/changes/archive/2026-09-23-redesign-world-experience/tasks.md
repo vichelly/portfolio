@@ -46,6 +46,20 @@
 - [ ] 6.4 Manual walkthrough on a narrow/mobile viewport repeating 6.3's checks. **Blocked by tooling, not by the code**: see 4.3 - the browser automation could not produce a viewport narrower than ~814px in this environment, on two separate attempts across two sessions. Desktop behavior is fully verified. This needs a real phone, or a manual devtools device-emulation check, before shipping.
 - [x] 6.5 Switch language mid-walkthrough at one plaza in each zone and confirm content, labels, and signposts all switch together with no fallback to the other language. (Verified at the contact station - HUD, panel, and signposts all switched to Portuguese together.)
 
+### Disposition of the two open tasks (4.3, 6.4) at archive time
+
+Both are narrow-viewport (360px) verifications that were attempted twice and blocked by
+the browser automation's inability to shrink the window below ~814px in this environment.
+They are **carried forward, not dropped**: the `NARROW_SHAPES`/`isNarrow` code path in
+`components/world/StationPanel.tsx` was never touched by this change, so it is not newly
+at risk, but it has not been re-verified against the new plaza set either.
+
+The follow-up change `remove-parkour-polish-world` carries this verification as its task
+7.5, which walks a 360px viewport using devtools device emulation rather than browser
+automation, and explicitly instructs the implementer to say so plainly if it still cannot
+be done rather than marking it complete. Neither task is marked `[x]` here, because
+neither was performed.
+
 ### Notes from the desktop walkthrough
 
 Two real bugs were found and fixed beyond what the tasks anticipated:

@@ -7,7 +7,16 @@ import * as THREE from "three"
 import { avatarState } from "@/lib/world/avatarState"
 import { stationPresence, type StationId } from "@/lib/world/trail"
 import { PALETTE, STATION_ACCENT } from "@/lib/world/theme"
-import { FONT_BOLD, FONT_REGULAR, SIZES, layoutStation } from "@/lib/world/panelLayout"
+import {
+  FLOOR_CLEARANCE,
+  FONT_BOLD,
+  FONT_REGULAR,
+  maxHeightFor,
+  PADDING,
+  SIZES,
+  fitShape,
+  layoutStation,
+} from "@/lib/world/panelLayout"
 import type { StationContent } from "@/lib/world/stations"
 
 interface StationPanelProps {
@@ -18,53 +27,6 @@ interface StationPanelProps {
   offset: [number, number]
   /** Facing, so the panel greets whoever is walking up the trail. */
   rotationY: number
-}
-
-const PADDING = 0.34
-const FLOOR_CLEARANCE = 1.2
-/** No panel is allowed to grow taller than this on screen. */
-const MAX_HEIGHT = 5.8
-
-/**
- * Panel shapes to try, narrowest first. Height is what forces the fit-scale
- * down and makes the type small, so a stop that carries a lot of text is given
- * more width and more columns rather than being allowed to grow upward.
- */
-const SHAPES = [
-  { width: 6, columns: 1 },
-  { width: 9, columns: 2 },
-  { width: 12, columns: 2 },
-  { width: 13, columns: 3 },
-]
-const NARROW_SHAPES = [
-  { width: 5.2, columns: 1 },
-  { width: 7.5, columns: 2 },
-]
-
-/** Text must fill at least this much of the panel; the rest is margin. */
-const MIN_FILL = 0.75
-/** The spec's floor for body text, in CSS pixels on screen. */
-const MIN_BODY_PIXELS = 16
-
-/** How much of the panel's height the text occupies. */
-function fillRatio(height: number) {
-  return height / (height + PADDING * 2)
-}
-
-/**
- * The first shape that both fits the frame and is dense enough; the widest if
- * none qualify. Density is checked here rather than trusted, because bigger
- * type in the same box just makes a taller panel that `fit` then shrinks -
- * undoing the gain it was supposed to deliver.
- */
-function fitShape(content: StationContent, narrow: boolean) {
-  const shapes = narrow ? NARROW_SHAPES : SHAPES
-  for (const shape of shapes) {
-    const layout = layoutStation(content, shape.width, shape.columns)
-    if (layout.height <= MAX_HEIGHT && fillRatio(layout.height) >= MIN_FILL) return layout
-  }
-  const last = shapes[shapes.length - 1]
-  return layoutStation(content, last.width, last.columns)
 }
 
 /**
@@ -88,7 +50,7 @@ export default function StationPanel({
   const layout = useMemo(() => fitShape(content, isNarrow), [content, isNarrow])
   const accent = STATION_ACCENT[content.id]
   // A tall panel is scaled down to fit the frame rather than running off it.
-  const fit = Math.min(1, MAX_HEIGHT / layout.height)
+  const fit = Math.min(1, maxHeightFor(isNarrow) / layout.height)
 
   // A phone frames a much narrower slice of the world, so the panel pulls in
   // toward the trail centre rather than standing out at the plaza edge where
@@ -127,8 +89,14 @@ export default function StationPanel({
       return
     }
 
-    // Tell the camera how much it has to frame here.
-    if (p > 0.5) avatarState.panelHeight = layout.height * fit
+    // Tell the camera how much it has to frame here - both dimensions, since
+    // on a narrow viewport it is the width that decides how far back it has
+    // to stand. PADDING is the panel's margin beyond the text block, on each
+    // side, so the framed width is the full board rather than just the type.
+    if (p > 0.5) {
+      avatarState.panelHeight = layout.height * fit
+      avatarState.panelWidth = (layout.width + PADDING * 2) * fit
+    }
 
     // Rise and settle as it comes in, rather than simply appearing.
     g.scale.setScalar(fit * (0.94 + p * 0.06))

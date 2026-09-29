@@ -1,28 +1,30 @@
 "use client"
 
-import { useMemo } from "react"
+import { Suspense, useMemo } from "react"
 import * as THREE from "three"
 import StationPanel from "@/components/world/StationPanel"
 import LinkSignpost from "@/components/world/LinkSignpost"
 import PlazaBadge from "@/components/world/PlazaBadge"
+import DistanceFade from "@/components/world/DistanceFade"
 import { PALETTE, STATION_ACCENT } from "@/lib/world/theme"
-import { PLAZA_RADIUS, STATION_T, TRAIL_CURVE, type StationId } from "@/lib/world/trail"
+import { PLAZA_FRAME } from "@/lib/world/plaza"
+import { PLAZA_RADIUS, STATION_T, type StationId } from "@/lib/world/trail"
 import { stationsFor } from "@/lib/world/stations"
 import { useWorldStore } from "@/lib/world-store"
 
 interface StationProps {
   id: StationId
   anchor: [number, number]
-  /** Index along the trail - used to alternate which side the panel stands on. */
-  index: number
 }
 
 /** Real employer/school logo for the plazas tied to a single place - not
  *  shown at intro, certifications, or contact, which aren't. */
 const PLAZA_BADGE: Partial<Record<StationId, string>> = {
   "itau-rpa": "/logos/itau.jpg",
+  "itau-rpa-2": "/logos/itau.jpg",
   "itau-intern": "/logos/itau.jpg",
   "agile-inc": "/logos/agile-inc.jpg",
+  "agile-inc-2": "/logos/agile-inc.jpg",
   fei: "/logos/fei.jpg",
   fiap: "/logos/fiap.jpg",
 }
@@ -32,10 +34,6 @@ const PLAZA_BADGE: Partial<Record<StationId, string>> = {
 const TOOL_ICONS = ["/logos/devin.jpg", "/logos/claude.png"]
 const TOOL_ICON_SPACING = 2.1
 
-/** The panel stands past the plaza centre, off to one side: the visitor walks
- *  toward it, reads it head-on, and then walks past it. */
-const PANEL_FORWARD = 5.5
-const PANEL_LATERAL = 3.2
 /** Posts sit on an arc across the plaza, clear of the walking line but inside
  *  the frame the visitor is looking at when they arrive. */
 const SIGNPOST_ARC = 2.1
@@ -46,25 +44,15 @@ const SIGNPOST_ARC = 2.1
  * alternates sides from station to station so the path ahead is never blocked
  * and the walk gains a rhythm.
  */
-export default function Station({ id, anchor, index }: StationProps) {
+export default function Station({ id, anchor }: StationProps) {
   const locale = useWorldStore((s) => s.locale)
   const content = useMemo(() => stationsFor(locale)[id], [locale, id])
   const accent = STATION_ACCENT[id]
 
-  const frame = useMemo(() => {
-    const tangent = TRAIL_CURVE.getTangentAt(STATION_T[id]).setY(0).normalize()
-    const left = new THREE.Vector3(tangent.z, 0, -tangent.x)
-    const panelSide = index % 2 === 0 ? 1 : -1
-    return { tangent, left, panelSide }
-  }, [id, index])
-
-  const { tangent, left, panelSide } = frame
-
-  const panelOffset: [number, number] = [
-    left.x * PANEL_LATERAL * panelSide + tangent.x * PANEL_FORWARD,
-    left.z * PANEL_LATERAL * panelSide + tangent.z * PANEL_FORWARD,
-  ]
-  const panelAnchor: [number, number] = [anchor[0] + panelOffset[0], anchor[1] + panelOffset[1]]
+  // The plaza's frame is derived once at module load and shared with
+  // StationLights, so the panel and the light that lights it cannot disagree
+  // about where the panel stands.
+  const { tangent, left, panelSide, panelOffset, panelAnchor } = PLAZA_FRAME[id]
 
   // The panel faces the plaza, angled toward the direction the visitor arrives
   // from - square-on while walking up, still readable while standing in front.
@@ -101,80 +89,95 @@ export default function Station({ id, anchor, index }: StationProps) {
 
   return (
     <group>
-      {/* Plaza ring: marks where the stop begins without walling it off. */}
-      <mesh position={[anchor[0], 0.015, anchor[1]]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[PLAZA_RADIUS * 0.82, PLAZA_RADIUS * 0.88, 64]} />
-        <meshBasicMaterial color={accent} transparent opacity={0.5} />
-      </mesh>
+      {/* The plaza's own structure fades up with distance. The panel below
+          keeps its own presence fade, which is tighter and tied to arriving
+          rather than to approaching, so it is deliberately left out. */}
+      <DistanceFade t={STATION_T[id]}>
+        {/* Plaza ring: marks where the stop begins without walling it off. */}
+        <mesh position={[anchor[0], 0.015, anchor[1]]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[PLAZA_RADIUS * 0.82, PLAZA_RADIUS * 0.88, 64]} />
+          <meshBasicMaterial color={accent} transparent opacity={0.5} />
+        </mesh>
 
-      {/* Gate pylons on the trail axis - the visitor walks between them. */}
-      {pylons.map((p, i) =>
-        [1, -1].map((side) => (
-          <group
-            key={`${i}-${side}`}
-            position={[p[0] + left.x * 3.4 * side, 0, p[1] + left.z * 3.4 * side]}
-          >
-            <mesh position={[0, 1.1, 0]} castShadow receiveShadow>
-              <cylinderGeometry args={[0.28, 0.36, 2.2, 6]} />
-              <meshStandardMaterial color={PALETTE.stone} flatShading />
-            </mesh>
-            <mesh position={[0, 2.35, 0]} castShadow>
-              <octahedronGeometry args={[0.3, 0]} />
-              <meshStandardMaterial
-                color={accent}
-                emissive={accent}
-                emissiveIntensity={0.7}
-                flatShading
-              />
-            </mesh>
-          </group>
-        )),
-      )}
+        {/* Gate pylons on the trail axis - the visitor walks between them. */}
+        {pylons.map((p, i) =>
+          [1, -1].map((side) => (
+            <group
+              key={`${i}-${side}`}
+              position={[p[0] + left.x * 3.4 * side, 0, p[1] + left.z * 3.4 * side]}
+            >
+              <mesh position={[0, 1.1, 0]} castShadow receiveShadow>
+                <cylinderGeometry args={[0.28, 0.36, 2.2, 6]} />
+                <meshStandardMaterial color={PALETTE.stone} flatShading />
+              </mesh>
+              <mesh position={[0, 2.35, 0]} castShadow>
+                <octahedronGeometry args={[0.3, 0]} />
+                <meshStandardMaterial
+                  color={accent}
+                  emissive={accent}
+                  emissiveIntensity={0.7}
+                  flatShading
+                />
+              </mesh>
+            </group>
+          )),
+        )}
 
-      {/* Plinth under the panel, so the content is planted rather than floating */}
-      <mesh position={[panelAnchor[0], 0.25, panelAnchor[1]]} castShadow receiveShadow>
-        <cylinderGeometry args={[1.5, 1.8, 0.5, 8]} />
-        <meshStandardMaterial color={PALETTE.stoneDark} flatShading />
-      </mesh>
-      <pointLight
-        position={[panelAnchor[0], 3, panelAnchor[1]]}
-        color={accent}
-        intensity={8}
-        distance={14}
-      />
+        {/* Plinth under the panel, so the content is planted rather than floating */}
+        <mesh position={[panelAnchor[0], 0.25, panelAnchor[1]]} castShadow receiveShadow>
+          <cylinderGeometry args={[1.5, 1.8, 0.5, 8]} />
+          <meshStandardMaterial color={PALETTE.stoneDark} flatShading />
+        </mesh>
+      </DistanceFade>
 
-      <StationPanel
-        content={content}
-        anchor={anchor}
-        offset={panelOffset}
-        rotationY={panelRotation}
-      />
+      {/* The accent light that used to stand here is now part of the world's
+          fixed two-light rig - see components/world/StationLights. A light
+          mounted per station changed the scene's light count as the avatar
+          walked, and every one of those changes recompiled every material in
+          the world. */}
+
+      {/* Each thing that can suspend gets its own boundary, so a font or a
+          logo still in flight can only ever blank itself. One boundary shared
+          across the world is what used to take every plaza, signpost and
+          skill mote off screen the moment a single crest was fetched. */}
+      <Suspense fallback={null}>
+        <StationPanel
+          content={content}
+          anchor={anchor}
+          offset={panelOffset}
+          rotationY={panelRotation}
+        />
+      </Suspense>
 
       {signposts.map(({ entry, position }) => (
-        <LinkSignpost
-          key={entry.id}
-          caption={entry.heading}
-          links={entry.links ?? []}
-          position={position}
-          accent={accent}
-        />
+        <Suspense key={entry.id} fallback={null}>
+          <LinkSignpost
+            caption={entry.heading}
+            links={entry.links ?? []}
+            position={position}
+            accent={accent}
+          />
+        </Suspense>
       ))}
 
       {PLAZA_BADGE[id] && (
-        <PlazaBadge position={panelAnchor} image={PLAZA_BADGE[id]!} accent={accent} />
+        <Suspense fallback={null}>
+          <PlazaBadge position={panelAnchor} image={PLAZA_BADGE[id]!} accent={accent} />
+        </Suspense>
       )}
 
       {id === "certifications" &&
         TOOL_ICONS.map((image, i) => (
-          <PlazaBadge
-            key={image}
-            position={[
-              panelAnchor[0] + (i - (TOOL_ICONS.length - 1) / 2) * TOOL_ICON_SPACING,
-              panelAnchor[1],
-            ]}
-            image={image}
-            accent={accent}
-          />
+          <Suspense key={image} fallback={null}>
+            <PlazaBadge
+              position={[
+                panelAnchor[0] + (i - (TOOL_ICONS.length - 1) / 2) * TOOL_ICON_SPACING,
+                panelAnchor[1],
+              ]}
+              image={image}
+              accent={accent}
+            />
+          </Suspense>
         ))}
     </group>
   )

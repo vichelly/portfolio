@@ -1,7 +1,12 @@
 /**
- * The single source of tuning for character movement. Every part of the world -
- * the trail and the parkour course alike - runs through the same controller and
- * the same numbers, so jumping cannot feel different in one place than another.
+ * The single source of tuning for character movement. Every part of the world
+ * runs through the same controller and the same numbers, so jumping cannot feel
+ * different in one place than another.
+ *
+ * The trail obstacles are sized directly from these: jump apex is
+ * JUMP_VELOCITY^2 / (2 * |GRAVITY|) = 1.736 units, airtime is
+ * 2 * JUMP_VELOCITY / |GRAVITY| = 0.731 s, and horizontal reach at MAX_SPEED is
+ * 4.75 units. Changing a number here changes what is clearable out there.
  */
 export const PHYSICS = {
   GRAVITY: -26,

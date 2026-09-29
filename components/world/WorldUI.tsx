@@ -20,7 +20,6 @@ export default function WorldUI({ setTouchVector, setTouchJump }: WorldUIProps) 
   const inputMode = useWorldStore((s) => s.inputMode)
   const activeStationId = useWorldStore((s) => s.activeStationId)
   const progressPercent = useWorldStore((s) => s.progressPercent)
-  const containment = useWorldStore((s) => s.containment)
   const fallbackOpen = useWorldStore((s) => s.fallbackOpen)
   const locale = useWorldStore((s) => s.locale)
   const setLocale = useWorldStore((s) => s.setLocale)
@@ -37,12 +36,7 @@ export default function WorldUI({ setTouchVector, setTouchJump }: WorldUIProps) 
   const stations = useMemo(() => stationsFor(locale), [locale])
   const station = activeStationId ? stations[activeStationId] : null
   const accent = activeStationId ? STATION_ACCENT[activeStationId] : PALETTE.panelEdge
-  const here =
-    containment === "detour"
-      ? t(UI.parkourDetour, locale)
-      : station
-        ? station.label
-        : t(UI.onTheTrail, locale)
+  const here = station ? station.label : t(UI.onTheTrail, locale)
 
   return (
     <>

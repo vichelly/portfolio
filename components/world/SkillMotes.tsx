@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useRef } from "react"
+import { Suspense, useMemo, useRef } from "react"
 import { useFrame } from "@react-three/fiber"
 import { Text } from "@react-three/drei"
 import * as THREE from "three"
@@ -9,9 +9,14 @@ import { t, type Locale } from "@/lib/i18n/locale"
 import { FONT_REGULAR } from "@/lib/world/panelLayout"
 import { PALETTE } from "@/lib/world/theme"
 import { TRAIL_CURVE } from "@/lib/world/trail"
+import { useMountWindow } from "@/lib/world/mountWindow"
 
 interface Mote {
-  key: string
+  /** Stable identity, and what the mount window keys off. */
+  id: string
+  /** Arc-length position along the trail, so motes can be windowed by distance
+   *  like everything else rather than all existing at once. */
+  t: number
   term: string
   color: string
   basePosition: THREE.Vector3
@@ -64,9 +69,19 @@ function termsFor(locale: Locale): string[] {
  * view via `lib/content/skills.ts` directly.
  */
 export default function SkillMotes({ locale }: { locale: Locale }) {
+  return (
+    // Its own boundary: ~66 Text instances share one font, and while that font
+    // is in flight they must not take the plazas down with them.
+    <Suspense fallback={null}>
+      <Motes locale={locale} />
+    </Suspense>
+  )
+}
+
+function Motes({ locale }: { locale: Locale }) {
   const group = useRef<THREE.Group>(null)
 
-  const motes = useMemo<Mote[]>(() => {
+  const all = useMemo<Mote[]>(() => {
     const terms = termsFor(locale).flatMap((term) => Array(REPEAT_COUNT).fill(term) as string[])
     return terms.map((term, i) => {
       // Spread evenly along the trail's arc length, with a little jitter so
@@ -86,7 +101,8 @@ export default function SkillMotes({ locale }: { locale: Locale }) {
         .setY(HEIGHT_MIN + Math.abs(Math.sin(i * 3.71)) * (HEIGHT_MAX - HEIGHT_MIN))
 
       return {
-        key: `${term}-${i}`,
+        id: `${term}-${i}`,
+        t: tt,
         term,
         color: MOTE_COLORS[i % MOTE_COLORS.length],
         basePosition,
@@ -97,6 +113,12 @@ export default function SkillMotes({ locale }: { locale: Locale }) {
       }
     })
   }, [locale])
+
+  // Only the motes near the avatar are in the scene. Each one is its own Text
+  // mesh with its own material, so mounting the whole field for the length of
+  // the trail cost ~66 draw calls and a per-frame quaternion copy each,
+  // everywhere, forever.
+  const motes = useMountWindow(all)
 
   useFrame((state) => {
     const g = group.current
@@ -119,7 +141,7 @@ export default function SkillMotes({ locale }: { locale: Locale }) {
     <group ref={group}>
       {motes.map((mote) => (
         <Text
-          key={mote.key}
+          key={mote.id}
           font={FONT_REGULAR}
           fontSize={FONT_SIZE}
           color={mote.color}

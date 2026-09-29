@@ -1,4 +1,4 @@
-import type { Containment, StationId } from "@/lib/world/trail"
+import type { StationId } from "@/lib/world/trail"
 
 /**
  * The avatar's live state, mutated in place every frame by the controller and
@@ -18,12 +18,10 @@ export const avatarState = {
   /** Horizontal speed in units/second. */
   speed: 0,
   grounded: true,
-  containment: "trail" as Containment,
   station: null as StationId | null,
   /** World-space facing angle (radians), derived from the avatar's own
-   *  movement. Published every frame regardless of containment, so the
-   *  camera can orient itself from real movement while off the main trail,
-   *  where trail arc-length `t` stops advancing and cannot supply a heading. */
+   *  movement. Read by anything that needs the body's heading rather than the
+   *  trail's - the avatar mesh's own rotation, and effects that key off it. */
   facing: 0,
   /** Set by anything that needs to place the avatar; the controller consumes it. */
   teleport: null as { x: number; y: number; z: number } | null,
@@ -31,6 +29,11 @@ export const avatarState = {
    *  from this, so a small panel is read from close up and a large one from
    *  far enough back to fit - rather than every stop sharing one distance. */
   panelHeight: 0,
+  /** Width of that same panel. Framing from height alone is what let a
+   *  multi-column panel that fitted vertically still run off the left and
+   *  right edges of a tall, narrow screen - the camera has to satisfy both
+   *  dimensions, and on a phone it is the width that binds. */
+  panelWidth: 0,
   /** Current motion state, so effects can react to walking and landing. */
   motion: "idle" as "idle" | "walk" | "jump" | "fall" | "land",
 }

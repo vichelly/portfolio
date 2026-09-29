@@ -60,14 +60,16 @@ export const SUN_POSITION = SUN_DIRECTION.clone().multiplyScalar(SUN_DISTANCE)
 /** Per-station accent, re-tuned to sit against warm ground rather than green. */
 export const STATION_ACCENT: Record<StationId, string> = {
   intro: "#4fd1c0",
+  // A zone that continues onto a second plaza keeps its accent, so the pair
+  // reads as one stop carried over rather than as two unrelated ones.
   "itau-rpa": "#ff8a3d",
+  "itau-rpa-2": "#ff8a3d",
   "itau-intern": "#ffab6e",
   "agile-inc": "#7fa6f0",
+  "agile-inc-2": "#7fa6f0",
   fei: "#8ecf6a",
   fiap: "#b78ef0",
   certifications: "#f5c451",
+  "certifications-2": "#f5c451",
   contact: "#f57a8a",
 }
-
-/** Marker colour for the optional detour - deliberately outside the station set. */
-export const DETOUR_ACCENT = "#f2e04e"

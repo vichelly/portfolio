@@ -23,7 +23,10 @@ export default function Effects({ mode }: EffectsProps) {
   if (mode === "off") return null
 
   return (
-    <EffectComposer multisampling={mode === "full" ? 4 : 0}>
+    // Multisampling on the composer's render target is per-sample shading of
+    // the whole frame; 2 is most of the edge quality of 4 for half the cost,
+    // and at this flat-shaded art level the difference is hard to find.
+    <EffectComposer multisampling={mode === "full" ? 2 : 0}>
       <Bloom
         intensity={0.55}
         luminanceThreshold={0.92}

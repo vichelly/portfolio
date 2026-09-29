@@ -1,19 +1,12 @@
 import * as THREE from "three"
-import {
-  CORRIDOR_HALF_WIDTH,
-  detourHalfWidth,
-  halfWidth,
-  projectToDetour,
-  projectToTrail,
-} from "@/lib/world/trail"
+import { CORRIDOR_HALF_WIDTH, halfWidth, projectToTrail } from "@/lib/world/trail"
 
 /**
  * Terrain height, in world units. Pure scenery: relief only exists outside the
  * walkable corridor, so the surface the avatar stands on stays exactly flat.
  *
- * See design.md, decision 2 - the character controller is deliberately not told
- * about this, which is safe only because containment forbids the avatar from
- * leaving the corridor.
+ * The character controller is deliberately not told about this, which is safe
+ * only because lateral clamping forbids the avatar from leaving the corridor.
  */
 
 const RELIEF_START = 2
@@ -62,30 +55,18 @@ function smoothFalloff(lateral: number, inner: number, outer: number): number {
 }
 
 /**
- * How much relief applies at this point: zero inside either the main trail's
- * corridor or the parkour detour's corridor, ramping to full over the next
- * stretch past whichever is closer. Without the detour term here, decorative
- * hills (up to RELIEF_HEIGHT) rise wherever the detour runs far from the main
- * trail - which is everywhere along it, since the detour is a lateral branch -
- * and visually swallow the parkour platforms and the avatar standing on them,
- * even though the flat collision ground underneath is untouched.
+ * How much relief applies at this point: zero inside the trail's corridor,
+ * ramping to full over the next stretch past it. There is one corridor in the
+ * world, so there is one term - relief simply cannot encroach on anywhere the
+ * avatar can walk.
  */
 export function reliefFalloff(x: number, z: number): number {
   const trail = projectToTrail(x, z)
-  const trailFalloff = smoothFalloff(
+  return smoothFalloff(
     Math.abs(trail.lateral),
     halfWidth(trail.t) + RELIEF_START,
     halfWidth(trail.t) + RELIEF_START + RELIEF_RAMP,
   )
-
-  const detour = projectToDetour(x, z)
-  const detourFalloff = smoothFalloff(
-    Math.abs(detour.lateral),
-    detourHalfWidth(detour.t) + RELIEF_START,
-    detourHalfWidth(detour.t) + RELIEF_START + RELIEF_RAMP,
-  )
-
-  return Math.min(trailFalloff, detourFalloff)
 }
 
 export function terrainHeight(x: number, z: number): number {

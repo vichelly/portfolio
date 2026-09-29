@@ -1,26 +1,14 @@
 import { GROUND_Y } from "@/lib/world/trail"
 
-export type GroundRegion = (x: number, z: number) => number | null
-
 /**
- * Ground height overrides contributed by whatever is mounted. The world is flat
- * by default; the parkour course uses this to open a pit under itself, so a
- * missed jump is a real fall rather than a step onto the lawn.
+ * Ground height of the world surface. The world is flat: anything the avatar
+ * can stand on above it is a solid resolved by the collision resolver, not a
+ * height override, so this is a constant rather than a registry.
+ *
+ * It stays a function because the character controller calls it per frame with
+ * the position it is resolving, and because a future raised region would slot
+ * in here without touching the controller.
  */
-const regions = new Map<string, GroundRegion>()
-
-export function registerGroundRegion(key: string, region: GroundRegion) {
-  regions.set(key, region)
-}
-
-export function unregisterGroundRegion(key: string) {
-  regions.delete(key)
-}
-
-export function groundYAt(x: number, z: number): number {
-  for (const region of regions.values()) {
-    const y = region(x, z)
-    if (y !== null) return y
-  }
+export function groundYAt(_x: number, _z: number): number {
   return GROUND_Y
 }

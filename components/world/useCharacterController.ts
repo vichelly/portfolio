@@ -8,12 +8,7 @@ import { resolveMove } from "@/lib/world/physics"
 import { activeSolids } from "@/lib/world/solids"
 import { avatarState } from "@/lib/world/avatarState"
 import { groundYAt } from "@/lib/world/ground"
-import {
-  activeStationAt,
-  clampFor,
-  containmentFor,
-  type Containment,
-} from "@/lib/world/trail"
+import { activeStationAt, clampToTrail } from "@/lib/world/trail"
 import { useWorldStore } from "@/lib/world-store"
 import type { useMovementInput } from "@/lib/input/useMovementInput"
 
@@ -33,10 +28,10 @@ export interface ControllerState {
 const LAND_RECOVERY = 0.22
 
 /**
- * The one character controller in the app. Owns gravity, jumping, containment,
- * and collision for the avatar everywhere in the world - the trail and the
- * parkour course both run through it, which is what makes jumping feel the
- * same in both.
+ * The one character controller in the app. Owns gravity, jumping, lateral
+ * clamping, and collision for the avatar everywhere in the world. There is one
+ * trail and one clamping rule, so movement cannot feel different in one place
+ * than another - there is no other place.
  */
 export function useCharacterController(
   group: React.RefObject<THREE.Group | null>,
@@ -50,7 +45,6 @@ export function useCharacterController(
     facing: 0,
   })
   const lastGroundedAt = useRef(0)
-  const containment = useRef<Containment>("trail")
   const publishedStation = useRef<string | null>(null)
   const publishedPercent = useRef(-1)
 
@@ -62,8 +56,8 @@ export function useCharacterController(
     const s = state.current
     const now = performance.now() / 1000
 
-    // A pending teleport (parkour respawn) is applied before anything else, so
-    // the rest of the step integrates from the new position.
+    // A pending teleport is applied before anything else, so the rest of the
+    // step integrates from the new position.
     if (avatarState.teleport) {
       g.position.set(avatarState.teleport.x, avatarState.teleport.y, avatarState.teleport.z)
       s.velocity.set(0, 0, 0)
@@ -101,15 +95,13 @@ export function useCharacterController(
     // --- integrate, contain, collide --------------------------------
     const prev = { x: g.position.x, y: g.position.y, z: g.position.z }
 
-    containment.current = containmentFor(containment.current, prev.x, prev.z)
-
     let nx = prev.x + s.velocity.x * delta
     let nz = prev.z + s.velocity.z * delta
     const ny = prev.y + s.velocity.y * delta
 
-    // Lateral containment first: it is a soft boundary, so collision has the
+    // Lateral clamping first: it is a soft boundary, so collision has the
     // final say over where the body actually ends up.
-    const clamped = clampFor(containment.current, nx, nz)
+    const clamped = clampToTrail(nx, nz)
     if (clamped.clamped) {
       nx = clamped.x
       nz = clamped.z
@@ -174,8 +166,9 @@ export function useCharacterController(
     avatarState.speed = speed
     avatarState.grounded = s.grounded
     avatarState.motion = s.motion
-    avatarState.containment = containment.current
-    avatarState.t = containment.current === "trail" ? projection.t : avatarState.t
+    // `t` always reflects where the avatar actually is: there is one curve, so
+    // it can never stop advancing, and the camera can always read a heading.
+    avatarState.t = projection.t
     avatarState.station = activeStationAt(avatarState.t)
     avatarState.facing = s.facing
 
@@ -189,9 +182,6 @@ export function useCharacterController(
     if (percent !== publishedPercent.current) {
       publishedPercent.current = percent
       store.setProgressPercent(percent)
-    }
-    if (store.containment !== containment.current) {
-      store.setContainment(containment.current)
     }
   })
 

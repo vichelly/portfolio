@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import type { Containment, StationId } from "@/lib/world/trail"
+import type { StationId } from "@/lib/world/trail"
 import { STORAGE_KEY, type Locale } from "@/lib/i18n/locale"
 
 export type InputMode = "keyboard" | "touch"
@@ -9,10 +9,6 @@ interface WorldState {
   locale: Locale
   setLocale: (locale: Locale) => void
   toggleLocale: () => void
-
-  /** Which curve owns lateral containment - the main trail or the detour. */
-  containment: Containment
-  setContainment: (containment: Containment) => void
 
   /** Published by the controller only when it changes, for the DOM HUD. */
   activeStationId: StationId | null
@@ -43,9 +39,6 @@ export const useWorldStore = create<WorldState>((set, get) => ({
     }
   },
   toggleLocale: () => get().setLocale(get().locale === "pt" ? "en" : "pt"),
-
-  containment: "trail",
-  setContainment: (containment) => set({ containment }),
 
   activeStationId: null,
   setActiveStationId: (activeStationId) => set({ activeStationId }),

@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import * as THREE from "three"
 import {
   PLAZA_RADIUS,
@@ -10,6 +10,7 @@ import {
   TRAIL_LENGTH,
   halfWidth,
 } from "@/lib/world/trail"
+import { useFrameSlice } from "@/lib/world/mountWindow"
 import { PALETTE } from "@/lib/world/theme"
 import { makeSurface } from "@/lib/world/surface"
 import { terrainHeight } from "@/lib/world/terrain"
@@ -77,6 +78,8 @@ interface Prop {
   scale: number
   rotation: number
   hue: number
+  /** Arc-length position along the trail, so props can be windowed by distance. */
+  t: number
 }
 
 /**
@@ -117,80 +120,169 @@ const PROPS: Prop[] = (() => {
         scale: 0.6 + rand() * 0.9,
         rotation: rand() * Math.PI * 2,
         hue: rand(),
+        t,
       })
     }
   }
   return props
 })()
 
-function Tree({ position, scale, rotation }: Prop) {
-  return (
-    <group position={position} rotation={[0, rotation, 0]} scale={scale}>
-      <mesh position={[0, 0.7, 0]} material={MATERIALS.bark} castShadow>
-        <cylinderGeometry args={[0.13, 0.2, 1.4, 5]} />
-      </mesh>
-      <mesh position={[0, 1.9, 0]} material={MATERIALS.foliage} castShadow>
-        <coneGeometry args={[0.95, 1.8, 6]} />
-      </mesh>
-      <mesh position={[0, 2.8, 0]} material={MATERIALS.foliage} castShadow>
-        <coneGeometry args={[0.68, 1.3, 6]} />
-      </mesh>
-    </group>
-  )
+// Reachable from the console in development so a walkthrough can measure what
+// the decor actually costs, rather than estimating it.
+if (typeof window !== "undefined" && process.env.NODE_ENV !== "production") {
+  Object.assign(window as unknown as Record<string, unknown>, { __decorProps: PROPS })
 }
 
-function Rock({ position, scale, rotation, hue }: Prop) {
-  return (
-    <mesh
-      position={[position[0], position[1] + 0.28 * scale, position[2]]}
-      rotation={[hue * 0.4, rotation, hue * 0.3]}
-      scale={scale}
-      material={MATERIALS.rock}
-      castShadow
-      receiveShadow
-    >
-      <dodecahedronGeometry args={[0.5, 0]} />
-    </mesh>
-  )
+/**
+ * The five primitives every prop is built from. Each becomes ONE draw call
+ * regardless of how many props are on screen.
+ *
+ * Before this, each prop was its own React element and a tree was three
+ * separate meshes, so roughly 250 props meant ~370 meshes - every one of them
+ * submitted twice a frame, once for the shadow map and once for colour, with
+ * no distance culling at all. That was the single largest cost in the scene
+ * and the main reason the world crawled on modest hardware.
+ *
+ * `offsetY` and `baseScale` reproduce exactly the per-prop placement the old
+ * components applied, so the world looks the same; it is only submitted
+ * differently.
+ */
+interface Batch {
+  key: string
+  kind: Prop["kind"]
+  material: THREE.Material
+  geometry: () => THREE.BufferGeometry
+  offsetY: number
+  tilt: boolean
 }
 
-function Grass({ position, scale, rotation }: Prop) {
+const BATCHES: Batch[] = [
+  {
+    key: "trunk",
+    kind: "tree",
+    material: MATERIALS.bark,
+    geometry: () => new THREE.CylinderGeometry(0.13, 0.2, 1.4, 5),
+    offsetY: 0.7,
+    tilt: false,
+  },
+  {
+    key: "canopy-low",
+    kind: "tree",
+    material: MATERIALS.foliage,
+    geometry: () => new THREE.ConeGeometry(0.95, 1.8, 6),
+    offsetY: 1.9,
+    tilt: false,
+  },
+  {
+    key: "canopy-high",
+    kind: "tree",
+    material: MATERIALS.foliage,
+    geometry: () => new THREE.ConeGeometry(0.68, 1.3, 6),
+    offsetY: 2.8,
+    tilt: false,
+  },
+  {
+    key: "rock",
+    kind: "rock",
+    material: MATERIALS.rock,
+    geometry: () => new THREE.DodecahedronGeometry(0.5, 0),
+    offsetY: 0.28,
+    tilt: true,
+  },
+  {
+    key: "grass",
+    kind: "grass",
+    material: MATERIALS.grass,
+    geometry: () => new THREE.ConeGeometry(0.3, 0.7, 4),
+    offsetY: 0.22,
+    tilt: false,
+  },
+]
+
+const _m = new THREE.Matrix4()
+const _q = new THREE.Quaternion()
+const _e = new THREE.Euler()
+const _pos = new THREE.Vector3()
+const _scale = new THREE.Vector3()
+
+function Batch({
+  batch,
+  props,
+}: {
+  batch: Batch
+  props: Prop[]
+}) {
+  const geometry = useMemo(batch.geometry, [batch])
+  const ref = useRef<THREE.InstancedMesh>(null)
+
+  useEffect(() => {
+    const mesh = ref.current
+    if (!mesh) return
+    props.forEach((p, i) => {
+      // Every part scales about the prop's own origin, so its vertical offset
+      // scales with it - matching the old `<group scale>` wrapping exactly.
+      const offset = batch.offsetY * p.scale
+      _pos.set(p.position[0], p.position[1] + offset, p.position[2])
+      _e.set(batch.tilt ? p.hue * 0.4 : 0, p.rotation, batch.tilt ? p.hue * 0.3 : 0)
+      _q.setFromEuler(_e)
+      _scale.setScalar(p.scale)
+      _m.compose(_pos, _q, _scale)
+      mesh.setMatrixAt(i, _m)
+    })
+    mesh.count = props.length
+    mesh.instanceMatrix.needsUpdate = true
+    mesh.computeBoundingSphere()
+  }, [props, batch])
+
+  if (props.length === 0) return null
+
   return (
-    <mesh
-      position={[position[0], position[1] + 0.22 * scale, position[2]]}
-      rotation={[0, rotation, 0]}
-      scale={scale}
-      material={MATERIALS.grass}
+    <instancedMesh
+      ref={ref}
+      args={[geometry, batch.material, props.length]}
       castShadow
-    >
-      <coneGeometry args={[0.3, 0.7, 4]} />
-    </mesh>
+      receiveShadow={batch.key === "rock"}
+      frustumCulled={false}
+    />
   )
 }
 
 interface DecorProps {
   /** Fraction of props to draw, from the quality tier. */
   density: number
+  /** How far along the trail props are drawn, in world units. */
+  radius: number
 }
 
-export default function Decor({ density }: DecorProps) {
+export default function Decor({ density, radius }: DecorProps) {
   // Take a deterministic stride through the list rather than the first N, so a
   // thinned world stays evenly populated instead of empty at one end.
-  const items = useMemo(
+  const thinned = useMemo(
     () => (density >= 1 ? PROPS : PROPS.filter((_, i) => i % Math.round(1 / density) === 0)),
     [density],
   )
+
+  // Distance windowing, on top of instancing: the far end of the trail is
+  // behind the fog anyway, and a prop 150 units away still costs a shadow-map
+  // draw if it is in the batch.
+  //
+  // PROPS is generated by walking the trail, so it is ordered by `t` and the
+  // visible set is a contiguous slice. That is what lets this recompute only
+  // when the slice's edges actually move, rather than on every tick of
+  // progress: the effect below rewrites every instance matrix in every batch,
+  // and it used to run about four times a second for the whole walk.
+  const visible = useFrameSlice(thinned, radius)
+
+  const byBatch = useMemo(
+    () => BATCHES.map((batch) => ({ batch, props: visible.filter((p) => p.kind === batch.kind) })),
+    [visible],
+  )
+
   return (
     <group>
-      {items.map((p, i) =>
-        p.kind === "tree" ? (
-          <Tree key={i} {...p} />
-        ) : p.kind === "rock" ? (
-          <Rock key={i} {...p} />
-        ) : (
-          <Grass key={i} {...p} />
-        ),
-      )}
+      {byBatch.map(({ batch, props }) => (
+        <Batch key={batch.key} batch={batch} props={props} />
+      ))}
     </group>
   )
 }

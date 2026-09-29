@@ -2,12 +2,7 @@
 
 import { useMemo } from "react"
 import * as THREE from "three"
-import {
-  DETOUR_CURVE,
-  TRAIL_CURVE,
-  detourHalfWidth,
-  halfWidth,
-} from "@/lib/world/trail"
+import { TRAIL_CURVE, halfWidth } from "@/lib/world/trail"
 import { PALETTE } from "@/lib/world/theme"
 import { makeSurface } from "@/lib/world/surface"
 
@@ -78,24 +73,9 @@ export default function Trail() {
       ),
     [],
   )
-  const detourStone = useMemo(
-    () =>
-      makeSurface(
-        { color: PALETTE.stone, flatShading: true, roughness: 0.9 },
-        { grainScale: 1.6, grainStrength: 0.22, bandScale: 2.2, bandStrength: 0.18 },
-      ),
-    [],
-  )
-  const detourBank = useMemo(
-    () =>
-      makeSurface({ color: PALETTE.stoneDark, flatShading: true }, { grainScale: 2.4, grainStrength: 0.2 }),
-    [],
-  )
 
   const surface = useMemo(() => buildRibbon(TRAIL_CURVE, halfWidth, 360), [])
   const edge = useMemo(() => buildRibbon(TRAIL_CURVE, halfWidth, 360, 0.9), [])
-  const detourSurface = useMemo(() => buildRibbon(DETOUR_CURVE, detourHalfWidth, 180), [])
-  const detourEdge = useMemo(() => buildRibbon(DETOUR_CURVE, detourHalfWidth, 180, 0.7), [])
 
   return (
     <group>
@@ -103,9 +83,6 @@ export default function Trail() {
           raised ground rather than a decal painted on the terrain. */}
       <mesh geometry={edge} material={bank} position={[0, -0.08, 0]} receiveShadow />
       <mesh geometry={surface} material={sand} position={[0, 0.001, 0]} receiveShadow />
-
-      <mesh geometry={detourEdge} material={detourBank} position={[0, -0.09, 0]} receiveShadow />
-      <mesh geometry={detourSurface} material={detourStone} position={[0, -0.002, 0]} receiveShadow />
     </group>
   )
 }

@@ -46,11 +46,14 @@ const byId = <T extends { id: string }>(items: T[], id: string): T => {
 const LABELS: Record<StationId, Localized> = {
   intro: { en: "Start", pt: "Início" },
   "itau-rpa": { en: "Itaú Unibanco", pt: "Itaú Unibanco" },
+  "itau-rpa-2": { en: "Itaú Unibanco (cont.)", pt: "Itaú Unibanco (cont.)" },
   "itau-intern": { en: "Itaú Unibanco (Intern)", pt: "Itaú Unibanco (Estágio)" },
   "agile-inc": { en: "Agile inc", pt: "Agile inc" },
+  "agile-inc-2": { en: "Agile inc (cont.)", pt: "Agile inc (cont.)" },
   fei: { en: "FEI University", pt: "Centro Universitário FEI" },
   fiap: { en: "FIAP", pt: "FIAP" },
   certifications: { en: "Certifications", pt: "Certificações" },
+  "certifications-2": { en: "Certifications (cont.)", pt: "Certificações (cont.)" },
   contact: { en: "Contact", pt: "Contato" },
 }
 
@@ -60,14 +63,17 @@ const KICKERS: Record<StationId, Localized> = {
     pt: "Vitor Lucas Fujita Felício — engenheiro de software",
   },
   "itau-rpa": { en: "Where the work got serious", pt: "Onde o trabalho ficou sério" },
+  "itau-rpa-2": { en: "The same job, continued", pt: "O mesmo trabalho, continuando" },
   "itau-intern": { en: "Where the bank job started", pt: "Onde o trabalho no banco começou" },
   "agile-inc": {
     en: "Two years of shipping across the stack",
     pt: "Dois anos entregando de ponta a ponta",
   },
+  "agile-inc-2": { en: "The same job, continued", pt: "O mesmo trabalho, continuando" },
   fei: { en: "Where it started", pt: "Onde tudo começou" },
   fiap: { en: "What comes next", pt: "O que vem a seguir" },
   certifications: { en: "Official stamps of approval", pt: "Selos oficiais" },
+  "certifications-2": { en: "And a few more", pt: "E mais algumas" },
   contact: { en: "End of the trail — say hello", pt: "Fim da trilha — diga oi" },
 }
 
@@ -97,11 +103,13 @@ const CREDENTIAL: Record<Locale, string> = { en: "Credential", pt: "Credencial" 
 
 /**
  * Every station's content in one language, assembled from lib/content. Station
- * order lives in trail.ts; this file only says what stands at each stop. Each
- * StationId here is one plaza carrying exactly one experience/education/
- * certification entry - dense zones (Professional Experience, Education &
- * Certifications) are several plazas walked in sequence rather than one
- * panel holding several entries, so no panel needs to shrink its type to fit.
+ * order lives in trail.ts; this file only says what stands at each stop.
+ *
+ * A zone whose entries cannot be read at 16px on a 360px-wide screen from one
+ * panel is walked as two plazas in sequence rather than shrinking its type to
+ * fit - `itau-rpa`, `agile-inc` and `certifications` are the three that needed
+ * it. Which three is not a matter of taste: it is whichever panels are still
+ * scaled down at the narrow width, measured against the real content.
  */
 export function stationsFor(locale: Locale): Record<StationId, StationContent> {
   const experienceEntry = (id: string): StationEntry => {
@@ -152,6 +160,22 @@ export function stationsFor(locale: Locale): Record<StationId, StationContent> {
     return [header, ...highlightEntries]
   }
 
+  /**
+   * Splits a zone's entries across two plazas walked in sequence.
+   *
+   * The continuation repeats the header - the period, title and company - with
+   * its own id, so the visitor arriving at the second plaza still knows whose
+   * job they are reading about, and so content coverage still sees each real
+   * entry exactly once. `links` stay on the first plaza only: two signposts to
+   * the same page, one at each plaza, is the duplication `dedupeLinks` exists
+   * to avoid.
+   */
+  const splitAfter = (entries: StationEntry[], first: number): [StationEntry[], StationEntry[]] => {
+    const head = entries[0]
+    const carried: StationEntry = { ...head, id: `${head.id}-cont`, links: undefined }
+    return [entries.slice(0, first), [carried, ...entries.slice(first)]]
+  }
+
   const station = (id: StationId, entries: StationEntry[]): StationContent => ({
     id,
     label: t(LABELS[id], locale),
@@ -159,16 +183,22 @@ export function stationsFor(locale: Locale): Record<StationId, StationContent> {
     entries,
   })
 
+  const [itauRpaA, itauRpaB] = splitAfter(experienceEntries("itau-rpa"), 3)
+  const [agileA, agileB] = splitAfter(experienceEntries("agile-inc"), 3)
+
   return {
     intro: station("intro", [
       { id: "welcome", heading: WELCOME_HEADING[locale], body: INTRO[locale] },
     ]),
-    "itau-rpa": station("itau-rpa", experienceEntries("itau-rpa")),
+    "itau-rpa": station("itau-rpa", itauRpaA),
+    "itau-rpa-2": station("itau-rpa-2", itauRpaB),
     "itau-intern": station("itau-intern", experienceEntries("itau")),
-    "agile-inc": station("agile-inc", experienceEntries("agile-inc")),
+    "agile-inc": station("agile-inc", agileA),
+    "agile-inc-2": station("agile-inc-2", agileB),
     fei: station("fei", experienceEntries("fei")),
     fiap: station("fiap", [experienceEntry("fiap")]),
-    certifications: station("certifications", [experienceEntry("pspo"), experienceEntry("devin-foundations"), experienceEntry("api-owner"), experienceEntry("aws-certifications")]),
+    certifications: station("certifications", [experienceEntry("pspo"), experienceEntry("devin-foundations")]),
+    "certifications-2": station("certifications-2", [experienceEntry("api-owner"), experienceEntry("aws-certifications")]),
     contact: station("contact", [
       {
         id: "contact",
