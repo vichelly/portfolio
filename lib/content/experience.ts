@@ -281,6 +281,28 @@ export const experience: ExperienceEntry[] = [
     ],
   },
   {
+    id: "yt-to-mp3",
+    year: "Personal project",
+    title: {
+      en: "yt-to-mp3",
+      pt: "yt-to-mp3",
+    },
+    company: "Python · yt-dlp · ffmpeg",
+    summary: {
+      en: "YouTube video to MP3 from the command line or a local web page. Handles age-restricted videos with your own browser login.",
+      pt: "Vídeo do YouTube para MP3 por linha de comando ou web local. Aceita vídeos com restrição de idade usando o seu login no navegador.",
+    },
+    description: {
+      en:
+        "A personal project built to download the audio of YouTube videos as MP3. It wraps yt-dlp and ffmpeg behind a command-line interface (one or more links, output folder, 128/192/320 kbps quality) and a small local web interface where the link is pasted into a page. Age-restricted videos, which YouTube only serves to signed-in viewers, work by reading the session cookies of a browser you are already logged in to (Chrome by default, or a cookies file); a JavaScript runtime (Deno) resolves the player challenge. Meant for content you are authorized to download.",
+      pt:
+        "Projeto pessoal para baixar o áudio de vídeos do YouTube em MP3. Envolve o yt-dlp e o ffmpeg em uma interface de linha de comando (um ou mais links, pasta de saída, qualidade de 128/192/320 kbps) e em uma pequena interface web local, onde o link é colado em uma página. Vídeos com restrição de idade, que o YouTube só entrega a quem está logado, funcionam lendo os cookies de sessão de um navegador em que você já está logado (Chrome por padrão, ou um arquivo de cookies); um runtime JavaScript (Deno) resolve o desafio do player. Feito para conteúdo que você tem autorização para baixar.",
+    },
+    links: [
+      { label: { en: "yt-to-mp3 (GitHub)", pt: "yt-to-mp3 (GitHub)" }, href: "https://github.com/vichelly/yt-to-mp3" },
+    ],
+  },
+  {
     id: "fiap",
     year: "Mar 2026 - Aug 2026",
     title: {
@@ -288,6 +310,10 @@ export const experience: ExperienceEntry[] = [
       pt: "Pós-graduação em Inteligência Artificial",
     },
     company: "FIAP",
+    summary: {
+      en: "Python for ML, computer vision, NLP and LLMs, practical GenAI (LangChain, LangGraph, RAG) and LGPD.",
+      pt: "Python para ML, visão computacional, NLP e LLMs, GenAI na prática (LangChain, LangGraph, RAG) e LGPD.",
+    },
     description: {
       en:
         "Specialization program covering Python for ML, classical algorithms (regression, clustering, decision trees) and model validation; computer vision (CNNs, OCR, object detection, YOLO, GANs); NLP and large language models; practical GenAI - prompt engineering, LangChain, LangGraph and RAG for document analysis; scalable ML on AWS, Azure and Google Cloud; and data protection under the LGPD.",

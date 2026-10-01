@@ -27,21 +27,11 @@ export function useMovementInput() {
   const touchActive = useRef(false)
 
   useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      keys.current[e.code] = true
-      if (e.code === "Space") {
-        e.preventDefault()
-        // Ignore auto-repeat: holding must not re-queue a consumed jump.
-        if (!e.repeat) jump.current.queuedAt = performance.now()
-      }
-    }
-    const up = (e: KeyboardEvent) => {
-      keys.current[e.code] = false
-    }
-    window.addEventListener("keydown", down)
-    window.addEventListener("keyup", up)
-
-    const tick = () => {
+    // The vector only changes when a key or the page's focus does, so it is
+    // recomputed there rather than polled on a second animation-frame loop that
+    // would run alongside the renderer's own - including while the page is
+    // hidden.
+    const recompute = () => {
       let x = 0
       let y = 0
       if (keys.current["KeyW"] || keys.current["ArrowUp"]) y -= 1
@@ -59,14 +49,42 @@ export function useMovementInput() {
         vector.current.x = 0
         vector.current.y = 0
       }
-      raf = requestAnimationFrame(tick)
     }
-    let raf = requestAnimationFrame(tick)
+
+    const down = (e: KeyboardEvent) => {
+      keys.current[e.code] = true
+      if (e.code === "Space") {
+        e.preventDefault()
+        // Ignore auto-repeat: holding must not re-queue a consumed jump.
+        if (!e.repeat) jump.current.queuedAt = performance.now()
+      }
+      recompute()
+    }
+    const up = (e: KeyboardEvent) => {
+      keys.current[e.code] = false
+      recompute()
+    }
+    // A key released while the page was hidden or unfocused never delivers its
+    // keyup here, so it would still read as held on return.
+    const release = () => {
+      keys.current = {}
+      jump.current.queuedAt = null
+      recompute()
+    }
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") release()
+    }
+
+    window.addEventListener("keydown", down)
+    window.addEventListener("keyup", up)
+    window.addEventListener("blur", release)
+    document.addEventListener("visibilitychange", onVisibility)
 
     return () => {
       window.removeEventListener("keydown", down)
       window.removeEventListener("keyup", up)
-      cancelAnimationFrame(raf)
+      window.removeEventListener("blur", release)
+      document.removeEventListener("visibilitychange", onVisibility)
     }
   }, [])
 

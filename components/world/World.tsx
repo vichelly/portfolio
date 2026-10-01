@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Canvas } from "@react-three/fiber"
 import { PerformanceMonitor, Preload } from "@react-three/drei"
 import Avatar from "@/components/world/Avatar"
@@ -71,6 +71,17 @@ export default function World() {
   const { settings, stepDown } = useQualityTier()
   const locale = useWorldStore((s) => s.locale)
 
+  // A hidden page renders nothing. Browsers throttle animation frames in a
+  // background tab but do not stop them, and every callback in the scene would
+  // keep ticking against a clock nobody is watching.
+  const [visible, setVisible] = useState(true)
+  useEffect(() => {
+    const sync = () => setVisible(document.visibilityState !== "hidden")
+    sync()
+    document.addEventListener("visibilitychange", sync)
+    return () => document.removeEventListener("visibilitychange", sync)
+  }, [])
+
   useEffect(() => {
     if (process.env.NODE_ENV === "production") return
     // Career content going missing is the one failure the world must not ship.
@@ -91,7 +102,12 @@ export default function World() {
           units, against 15% before). `near` moves out to 0.5 to buy back the
           depth precision the longer far plane costs; nothing ever gets closer
           to the camera than the avatar, several units away. */}
-      <Canvas shadows dpr={[1, settings.dprCap]} camera={{ fov: 55, near: 0.5, far: 340 }}>
+      <Canvas
+        shadows
+        frameloop={visible ? "always" : "never"}
+        dpr={[1, settings.dprCap]}
+        camera={{ fov: 55, near: 0.5, far: 340 }}
+      >
         {/* Only ever steps down: a tier whose cost straddles the target would
             otherwise flip back and forth forever.
 
