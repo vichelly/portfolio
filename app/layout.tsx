@@ -1,10 +1,18 @@
 import type React from "react"
 import "@/app/globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import localFont from "next/font/local"
 
-const inter = Inter({ subsets: ["latin"] })
+// The same files the 3D text already fetches, so the page's own text and the
+// panels share one cached copy and nothing waits on a third-party host.
+const inter = localFont({
+  src: [
+    { path: "../public/fonts/inter-latin-400.woff", weight: "400", style: "normal" },
+    { path: "../public/fonts/inter-latin-600.woff", weight: "600", style: "normal" },
+  ],
+  display: "swap",
+  fallback: ["system-ui", "sans-serif"],
+})
 
 export const metadata: Metadata = {
   title: "Vitor Lucas Fujita Felício — 3D Portfolio",
@@ -18,19 +26,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <head>
         <link rel="icon" href="/favicon.png" sizes="any" />
       </head>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          {children}
-        </ThemeProvider>
+        {children}
       </body>
     </html>
   )
 }
-
-
-
-import './globals.css'
